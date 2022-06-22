@@ -52,14 +52,14 @@ class Layer{
 
 int main(){
 
-Layer L;
-for (int i=0; i<5; ++i){
-	layers[i]=L(i);
+Layer layers[4];
+for (int i=0; i<=4; ++i){
+	layers[i]=Layer(i);
 }
 
 readimage into layers[0].Aofind[0];
 
-for (int i=0; i<4; ++i){
+for (int i=0; i<=3; ++i){
 layers[i].conv(layers[i].Aok1d, layers[i].Aofind);
 layers[i].conv(layers[i].Aok2d, layers[i].Aof1d);
 layers[i].avgpool(layers[i+1].Aofind);
