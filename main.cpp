@@ -13,6 +13,13 @@ class Layer{
 	valtype Aofinu [num_of_features][imgsize][imgsize]; // blue
 	valtype Aof1u [num_of_features][imgsize][imgsize];
 	valtype Aof2u [num_of_features][imgsize][imgsize];
+
+	//=====================padded feature arrays============================
+	valtype Aof1dPadded [num_of_features][imgsize+2][imgsize+2];
+	valtype Aof2dPadded [num_of_features][imgsize+2][imgsize+2]; // white
+	valtype AofinuPadded [num_of_features][imgsize+2][imgsize+2]; // blue
+	valtype Aof1uPadded [num_of_features][imgsize+2][imgsize+2];
+	valtype Aof2uPadded [num_of_features][imgsize+2][imgsize+2];
 	// ================== Array of kernels ===================
 	// Aok1d = (128 elements/kernels, every element = 3x3x64)
 	// Aok2d = (128 elements/kernels, every element = 3x3x128)
@@ -37,6 +44,54 @@ class Layer{
 	// conv(double* ker, double* feat, bool overwrite=False){}
 	// conv(Aok1d, Aofind) (depth of every kernel in Aok1d is equal to number of input channels/features) --> (overwrite Aof1d)
 	// conv(Aok2u, Aof1u) ---> (overwrite Aof2u)
+	void pad(double*** input, double*** output){
+		for(int c = 0; c < num_of_features; c++){
+			for(int i = 0; i < imgsize+2; i++){
+				output[c][0][i] = 0;
+				output[c][i][0] = 0;
+				output[c][0][imgsize+1] = 0;
+				output[c][imgsize+1][0] = 0;
+			}
+		}
+		for(int c = 0; c < num_of_features; c++){
+			for(int i = 0; i < imgsize; i++){
+				for(int j = 0; j < imgsize; j++){
+					output[c][i+1][j+1] = input[c][i][j];
+				}
+			}
+		}
+	}
+
+	void ReLU(double*** input){
+		for(int c = 0; c < num_of_features; c++){
+			for(int i = 0; i < imgsize; i++){
+				for(int j = 0; j < imgsize; j++){
+					if(input[c][i][j] < 0) input[c][i][j] = 0;
+				}
+			}
+		}
+	}
+
+	void conv(double*** input, double**** kernel, double*** output){
+		int s = 1;			//stride
+		int layernNr = n;
+		int num_of_kernels = num_of_features/2;
+		int channels = num_of_features;
+		for(int i = 0; i < imgsize; i++){
+			for(int j = 0; j < imgsize; j++){
+				for(int h = 0; h < num_of_kernels; h++){
+					for(int k = 0; k < channels; k++){
+						for(int n = 0; n < 3; n++){
+							for(int m = 0; m < 3; m++){
+								output[k][i][j] += input[k][i*s+n+1][j*s+m+1] * kernel[h][k][n][m];
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// =============================
 	void avgpool(double* Aofind_lower){ // writes to lower layer
 		for (int i=0; i<num_of_features; ++i){
