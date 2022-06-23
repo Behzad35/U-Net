@@ -17,13 +17,13 @@ class Layer{
 	// Aok2d = (128 elements/kernels, every element = 3x3x128)
 	// Aok1u = (128 elements/kernels, every element = 3x3x256)
 	// Aok2u = (128 elements/kernels, every element = 3x3x128)
-	// Aok_uc (empty for firstlayr) = (64/128? elements/kernels, every element = 3x3x256)
-	// Aok [w][h][depth][number]
-	Aok1d 	[num_of_features][3][3][num_of_features/2];
+	// Aok_uc (empty for firstlayr) = (64 elements/kernels, every element = 2x2x256)
+	// 		[number][w][h][depth]
+	Aok1d 	[num_of_features][3][3][num_of_features*0.5];
 	Aok2d 	[num_of_features][3][3][num_of_features];
 	Aok1u 	[num_of_features][3][3][num_of_features*2];
 	Aok2u 	[num_of_features][3][3][num_of_features];
-	Aok_uc 	[num_of_features][3][3][num_of_features*2];
+	Aok_uc 	[num_of_features*0.5][2][2][num_of_features*2];
 
 
 	// ============================
@@ -36,13 +36,21 @@ class Layer{
 	conv(double* ker, double* feat, bool overwrite=False){}
 	conv(Aok1d, Aofind) (depth of every kernel in Aok1d is equal to number of input channels/features) --> (overwrite Aof1d)
 	conv(Aok2u, Aof1u) ---> (overwrite Aof2u)
-	for  
 	// =============================
-	avgpool(&L2.Aofind){
-	overwrite L2.Aofind
+	void avgpool(double* Aofind_lower){ // Aofind_lower is in the lower layer
+		int imgsize_lower = 0.5 * imgsize;
+		for (int i=0; i<num_of_features; ++i){
+			for (int j=0; j<imgsize_lower; ++j){
+				for(int k=0; k<imgsize_lower; ++k){
+					Aofind_lower[i][j][k] = 0.25*(Aof2d[i][2*j][2*k] + Aof2d[i][2*j+1][2*k] + Aof2d[i][2*j][2*k+1] + Aof2d[i][2*j+1][2*k+1]);      
+				}
+			}
+		}
 	}
 	// ==============================
-	upconv(&L1.Aofinu){
+	void upconv(double* Aofinu_upper){
+
+
 	overwrite L1.Aofinu
 	}
 };
