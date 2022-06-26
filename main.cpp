@@ -1,7 +1,9 @@
 #include <iostream>
 #include "Layer.h"
+#include "processImages.h"
 
 int batchsize=0;
+int batchNr = 0;
 
 void relu(Layer::ArrOfVols &input){
 	int num_of_features = input[0].d;
@@ -101,21 +103,23 @@ Layer::ArrOfVols create_ArrOfVols(int num_of_arrs, int depth, int width){
 
 //=====================================================================
 int main(){
+    batchsize = 8;
+    int input_imgsize = 512;
+    int num_of_layers = 5;
+    Layer layers[num_of_layers];
+    for (int i=0; i<num_of_layers; ++i){
+	    layers[i]=Layer(i, input_imgsize, batchsize);
+    }
+    
+    ReadImages(layers[0].Aof1d, batchNr, batchsize);
 
-batchsize = 8;
-int input_imgsize = 512;
-int num_of_layers = 5;
-Layer layers[num_of_layers];
-for (int i=0; i<num_of_layers; ++i){
-	layers[i]=Layer(i, input_imgsize, batchsize);
-}
-
-// for (int b=0; b<batchsize; ++b){
+//for (int b=0; b<batchsize; ++b){
 // 	for(int x=1; x<layers[0].imgsize-1; ++x){
 // 		for (int y=1; y<layers[0].imgsize-1; ++y){
 // 			layers[0].Aofind[b](0,x,y) = // (x and y run over interior of Aofind) so pixel with coordinate (x-1,y-1) in the image should be assigned here
 // 		}
 // 	}
+
 // }
 
 Layer::ArrOfVols Aok_final(create_ArrOfVols(3, layers[0].num_of_features, 1)); // Final Array of kernels (3 kernels) (1x1)
