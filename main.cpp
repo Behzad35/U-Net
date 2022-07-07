@@ -111,8 +111,8 @@ int main(){
 	    layers[i]=Layer(i, input_imgsize, batchsize);
     }
     
-    ReadImages(layers[0].Aof1d, batchNr, batchsize);
-
+    ReadImages(layers[0].Aofind, 0, batchsize);
+    displayImage(layers[0].Aofind,1);
 //for (int b=0; b<batchsize; ++b){
 // 	for(int x=1; x<layers[0].imgsize-1; ++x){
 // 		for (int y=1; y<layers[0].imgsize-1; ++y){
@@ -121,7 +121,7 @@ int main(){
 // 	}
 
 // }
-
+/*
 Layer::ArrOfVols Aok_final(create_ArrOfVols(3, layers[0].num_of_features, 1)); // Final Array of kernels (3 kernels) (1x1)
 Layer::ArrOfVols Aof_final(create_ArrOfVols(batchsize, 3, layers[0].imgsize));	// Final Array of features (3 features) (output segmentation map) 
 
@@ -171,6 +171,6 @@ std::cout<<"Final conv"<<std::endl;
 conv(layers[0].Aof2u, Aok_final, Aof_final);
 
 std::cout<<"writing output"<<std::endl;
-
+*/
 return 0;
 }
