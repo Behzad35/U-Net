@@ -12,7 +12,7 @@ LDLIBS= -lm -lpthread -lX11 -ljpeg -lpng
 DEPFLAGS=-MP -MD
 
 # automatically add the -I onto each include directory
-CFLAGS=-Wall -Wextra -g -fopenmp -O3 -DNDEBUG -std=c++11 $(foreach D,$(INCDIRSI), -I$(D)) $(OPT) $(DEPFLAGS)
+CFLAGS=-Wall -Wextra -g -fopenmp -O3 -DNDEBUG -std=c++11 $(foreach D,$(INCDIRS), -I$(D)) $(OPT) $(DEPFLAGS)
 
 # for-style iteration and regex completion
 CFILES=$(foreach D,$(CODEDIRS),$(wildcard $(D)/*.cpp))
