@@ -19,6 +19,7 @@ void relu(Layer::ArrOfVols &input){
 	}
 }
 void conv(Layer::ArrOfVols const &input, Layer::ArrOfVols const &kernel, Layer::ArrOfVols &output, bool wipe_before_adding=true){
+    std::cout<<"conv 1 init";
 	int num_of_kernels = output[0].d;
 	int depth_of_kernels = input[0].d;
 	int imgsize = input[0].w; // imgsize includes padding (both input and output are padded)
@@ -112,65 +113,58 @@ int main(){
     }
     
     ReadImages(layers[0].Aofind, 0, batchsize);
-    displayImage(layers[0].Aofind,1);
-//for (int b=0; b<batchsize; ++b){
-// 	for(int x=1; x<layers[0].imgsize-1; ++x){
-// 		for (int y=1; y<layers[0].imgsize-1; ++y){
-// 			layers[0].Aofind[b](0,x,y) = // (x and y run over interior of Aofind) so pixel with coordinate (x-1,y-1) in the image should be assigned here
-// 		}
-// 	}
+    displayImage(layers[0].Aofind,2);
 
-// }
-/*
-Layer::ArrOfVols Aok_final(create_ArrOfVols(3, layers[0].num_of_features, 1)); // Final Array of kernels (3 kernels) (1x1)
-Layer::ArrOfVols Aof_final(create_ArrOfVols(batchsize, 3, layers[0].imgsize));	// Final Array of features (3 features) (output segmentation map) 
+    Layer::ArrOfVols Aok_final(create_ArrOfVols(3, layers[0].num_of_features, 1)); // Final Array of kernels (3 kernels) (1x1)
+    Layer::ArrOfVols Aof_final(create_ArrOfVols(batchsize, 3, layers[0].imgsize));	// Final Array of features (3 features) (output segmentation map) 
 
-// rand_init_kernels()
-//================================== Forwared Pass ========================================
-for (int i=0; i<=num_of_layers-2; ++i){
-	std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-	std::cout<<"conv 1"<<std::endl;
-	conv(layers[i].Aofind, layers[i].Aok1d, layers[i].Aof1d);
-	relu(layers[i].Aof1d);
+    // rand_init_kernels()
+    //================================== Forwared Pass ========================================
+    for (int i=0; i<=num_of_layers-2; ++i){
+         std::cout<<"---------- Layer ("<< i  <<") ----------"<<std::endl;
+         std::cout<<"conv 1"<<std::endl;
+       
+        conv(layers[i].Aofind, layers[i].Aok1d, layers[i].Aof1d);
+        relu(layers[i].Aof1d);
 
-	std::cout<<"conv 2"<<std::endl;
-	conv(layers[i].Aof1d, layers[i].Aok2d, layers[i].Aof2d);
-	relu(layers[i].Aof2d);
+        std::cout<<"conv 2"<<std::endl;
+        conv(layers[i].Aof1d, layers[i].Aok2d, layers[i].Aof2d);
+        relu(layers[i].Aof2d);
 
-	std::cout<<"avgpool to layer "<< i+1 <<std::endl;
-	avgpool(layers[i].Aof2d, layers[i+1].Aofind);
+        std::cout<<"avgpool to layer "<< i+1 <<std::endl;
+        avgpool(layers[i].Aof2d, layers[i+1].Aofind);
 
-}
-// lowest layer uses features (Aofinu, Aof1u and Aof2u) and kernels (Aok1u, Aok2u and Aok_uc). the rest are never used
-std::cout<<"---------- Layer ("<< num_of_layers-1 <<") ----------"<<std::endl;
-std::cout<<"conv 1"<<std::endl;
-conv(layers[num_of_layers-1].Aofinu, layers[num_of_layers-1].Aok1u, layers[num_of_layers-1].Aof1u);
-relu(layers[num_of_layers-1].Aof1u);
+    }
+    // lowest layer uses features (Aofinu, Aof1u and Aof2u) and kernels (Aok1u, Aok2u and Aok_uc). the rest are never used
+    std::cout<<"---------- Layer ("<< num_of_layers-1 <<") ----------"<<std::endl;
+    std::cout<<"conv 1"<<std::endl;
+    conv(layers[num_of_layers-1].Aofinu, layers[num_of_layers-1].Aok1u, layers[num_of_layers-1].Aof1u);
+    relu(layers[num_of_layers-1].Aof1u);
 
-std::cout<<"conv 2"<<std::endl;
-conv(layers[num_of_layers-1].Aof1u, layers[num_of_layers-1].Aok2u, layers[num_of_layers-1].Aof2u);
-relu(layers[num_of_layers-1].Aof2u);
+    std::cout<<"conv 2"<<std::endl;
+    conv(layers[num_of_layers-1].Aof1u, layers[num_of_layers-1].Aok2u, layers[num_of_layers-1].Aof2u);
+    relu(layers[num_of_layers-1].Aof2u);
 
-for (int i=num_of_layers-2; i>=0; --i){
-	std::cout<<"upconv to layer "<< i <<std::endl;
-	upconv(layers[i+1].Aof2u, layers[i+1].Aok_uc, layers[i].Aofinu);
-	relu(layers[i].Aofinu);
+    for (int i=num_of_layers-2; i>=0; --i){
+        std::cout<<"upconv to layer "<< i <<std::endl;
+        upconv(layers[i+1].Aof2u, layers[i+1].Aok_uc, layers[i].Aofinu);
+        relu(layers[i].Aofinu);
 
-	std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-	std::cout<<"conv 1"<<std::endl;
-	conv(layers[i].Aof2d, layers[i].Aok1u, layers[i].Aof1u);	// add white to Aof1u
-	conv(layers[i].Aofinu, layers[i].Aok1u, layers[i].Aof1u, false);	// dont wipe Aof1u, just add blue to Aof1u
-	relu(layers[i].Aof1u);
+        std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
+        std::cout<<"conv 1"<<std::endl;
+        conv(layers[i].Aof2d, layers[i].Aok1u, layers[i].Aof1u);	// add white to Aof1u
+        conv(layers[i].Aofinu, layers[i].Aok1u, layers[i].Aof1u, false);	// dont wipe Aof1u, just add blue to Aof1u
+        relu(layers[i].Aof1u);
 
-	std::cout<<"conv 2"<<std::endl;
-	conv(layers[i].Aof1u, layers[i].Aok2u, layers[i].Aof2u);
-	relu(layers[i].Aof2u);
-}
+        std::cout<<"conv 2"<<std::endl;
+        conv(layers[i].Aof1u, layers[i].Aok2u, layers[i].Aof2u);
+        relu(layers[i].Aof2u);
+    }
 
-std::cout<<"Final conv"<<std::endl;
-conv(layers[0].Aof2u, Aok_final, Aof_final);
+    std::cout<<"Final conv"<<std::endl;
+    conv(layers[0].Aof2u, Aok_final, Aof_final);
 
-std::cout<<"writing output"<<std::endl;
-*/
+    std::cout<<"writing output"<<std::endl;
+    
 return 0;
 }

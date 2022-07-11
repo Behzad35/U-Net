@@ -112,6 +112,25 @@ void upconv(Layer::ArrOfVols const &input, Layer::ArrOfVols const &kernel, Layer
 	}
 }
 
+void upconv_backward(Layer::ArrOfVols const &input, Layer::ArrOfVols const &kernel, Layer::ArrOfVols &output){
+   
+    for(int i=0; i<output[0].d; ++i){
+        for(int x=0; x<output[0].w; ++x){
+            for(int y=0; y<output[0].w; ++y){
+                for(int b=0; b<batchsize; ++b){
+                    for(int j=0; j<input[0].d; ++j){
+
+                        output[b](i,x,y) = kernel[i](j,0,0) * input[b](j,2*x,y) +
+                                            kernel[i](j,1,0) * input[b](j,(2*x)+1,y) +
+                                            kernel[i](j,0,1) * input[b](j,2*x,(2*y)+1) +
+                                            kernel[i](j,1,1) * input[b](j,(2*x)+1,(2*y)+1);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void concat(Layer::ArrOfVols const &input1, Layer::ArrOfVols const &input2, Layer::ArrOfVols &output){
 	int num_of_features = input1[0].d;
 	int imgsize = input1[0].w; // includes padding
