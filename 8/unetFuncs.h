@@ -12,6 +12,7 @@ void fullconv(Layer::ArrOfVols const &input, Layer::ArrOfVols const &kernel, Lay
 void avgpool(Layer::ArrOfVols const &input, Layer::ArrOfVols &output);
 void avgpool_backward(Layer::ArrOfVols const &input, Layer::ArrOfVols &output);
 void upconv(Layer::ArrOfVols const &input, Layer::ArrOfVols const &kernel, Layer::ArrOfVols &output);
+void upconv_backward(Layer::ArrOfVols const &input, Layer::ArrOfVols const &kernel, Layer::ArrOfVols &output);
 void concat(Layer::ArrOfVols const &input1, Layer::ArrOfVols const &input2, Layer::ArrOfVols &output);
 void create_Aok_backward(Layer::ArrOfVols const &Aok, Layer::ArrOfVols &Aok_back);
 void create_all_Aok_backward(Layer *layers, int num_of_layers);
