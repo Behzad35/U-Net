@@ -4,7 +4,7 @@
 #include <memory>
 #include "Volume.h"
 
-struct Layer{
+class Layer{
 	Layer()=default;
 	Layer(int n, int input_imgsize, int batchsize) : 
 		layer_num(n),

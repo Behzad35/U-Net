@@ -1,6 +1,6 @@
 BINARY=bin
 CODEDIRS =. src
-INCDIRS=. ./include/
+INCDIRS=. include
 
 CC = g++
 OPT=-O0
