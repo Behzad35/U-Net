@@ -25,6 +25,33 @@ void readKernel(Layer::ArrOfVols const &target, const char * path, int dim[]){
     }    
 }
 
+void readTwoKernel(Layer::ArrOfVols const &target1, Layer::ArrOfVols const &target2, const char * path, int dim[]){
+    auto d = test_load<float>(path);
+    int index=0;
+    int d2 = dim[1] / 2;
+    int j2 = 0;
+    std::cout << path;
+    std::cout<<"Dimension ArrOfVols: "<<target1[0].d<< " x  " << target1[0].w<<std::endl;
+
+    //std::copy(d.data.begin(), d.data.end(), target);
+    for(int i=0; i < dim[0]; i++){
+        for(int j=0; j < dim[1]; j++){
+            for(int n=0; n < dim[2]; n++){
+                for(int m=0; m < dim[3]; m++){
+                    if(j < d2){
+                        target1[i](j,n,m) = d.data[index];
+                    }else{
+                        j2 = j-d2;
+                        target2[i](j2,n,m) = d.data[index];
+                    }
+                    index++;
+                }
+            }
+        }
+    }
+}
+
+
 void init_weights(Layer * layers){
 
     //--dimensions of weights--
@@ -52,39 +79,35 @@ void init_weights(Layer * layers){
     int dt1[] = {16,16,2,2};
     int dt2[] = {8,8,2,2};
     int dt3[] = {4,4,2,2};
-
-
+    
     readKernel(layers[0].Aok1d, "./weights/conv0.weight.npy", d0);
     readKernel(layers[0].Aok2d, "./weights/conv1.weight.npy", d1);
-    readKernel(layers[0].Aok1u1, "./weights/conv16.weight.npy",d16); //NOT SURE????
-    readKernel(layers[0].Aok1u2, "./weights/conv16.weight.npy", d16); //NOT SURE????
+    readTwoKernel(layers[0].Aok1u1,layers[0].Aok1u2, "./weights/conv14.weight.npy", d16);
     readKernel(layers[0].Aok2u, "./weights/conv17.weight.npy", d17);
     readKernel(layers[0].Aok_final, "./weights/conv18.weight.npy", d18);
 
     readKernel(layers[1].Aok1d, "./weights/conv2.weight.npy", d2);
     readKernel(layers[1].Aok2d, "./weights/conv3.weight.npy", d3);
-    readKernel(layers[1].Aok1u1, "./weights/conv14.weight.npy", d14); //NOT SURE????
-    readKernel(layers[1].Aok1u2, "./weights/conv14.weight.npy", d14); //NOT SURE????
+    readTwoKernel(layers[1].Aok1u1,layers[1].Aok1u2, "./weights/conv14.weight.npy", d14);
     readKernel(layers[1].Aok2u, "./weights/conv15.weight.npy", d15);
     readKernel(layers[1].Aok_uc, "./weights/transposed_conv3.weight.npy", dt3);
 
     readKernel(layers[2].Aok1d, "./weights/conv4.weight.npy", d4);
     readKernel(layers[2].Aok2d, "./weights/conv5.weight.npy", d5);
-    readKernel(layers[2].Aok1u1, "./weights/conv12.weight.npy", d12); //NOT SURE????
-    readKernel(layers[2].Aok1u2, "./weights/conv12.weight.npy", d12); //NOT SURE????
+    readTwoKernel(layers[2].Aok1u1,layers[2].Aok1u2, "./weights/conv14.weight.npy", d12);
     readKernel(layers[2].Aok2u, "./weights/conv13.weight.npy", d13 );
     readKernel(layers[2].Aok_uc, "./weights/transposed_conv2.weight.npy", dt2);
 
     readKernel(layers[3].Aok1d, "./weights/conv6.weight.npy", d6);
     readKernel(layers[3].Aok2d, "./weights/conv7.weight.npy", d7);
-    readKernel(layers[3].Aok1u1, "./weights/conv10.weight.npy", d10); //NOT SURE????
-    readKernel(layers[3].Aok1u2, "./weights/conv10.weight.npy", d10); //NOT SURE????
+    readTwoKernel(layers[3].Aok1u1,layers[3].Aok1u2, "./weights/conv14.weight.npy", d10);
     readKernel(layers[3].Aok2u, "./weights/conv11.weight.npy", d11);
     readKernel(layers[3].Aok_uc, "./weights/transposed_conv1.weight.npy", dt1);
 
     readKernel(layers[4].Aok1d, "./weights/conv8.weight.npy", d8);
     readKernel(layers[4].Aok2u, "./weights/conv9.weight.npy", d9);
     readKernel(layers[4].Aok_uc, "./weights/transposed_conv0.weight.npy", dt0);
+
 }
 
 void init_biases(Layer * layers){
