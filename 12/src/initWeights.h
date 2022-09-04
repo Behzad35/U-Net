@@ -17,7 +17,9 @@ template <typename Scalar> struct npy_data {
 template <typename Scalar> npy_data<Scalar> test_load(const char * path); 
 
 
-  
+
+void readTwoKernel(Layer::ArrOfVols const &target1, Layer::ArrOfVols const &target2, const char * path, int dim[]);
+
 void readKernel(Layer::ArrOfVols const &target, const char * path, int dim[]);
 
 void init_weights(Layer * layers);
