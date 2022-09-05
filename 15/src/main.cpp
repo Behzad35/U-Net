@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[]){
     learning_rate = 1;
-    if(argc<3){std::cout<<"args: [imgsize] [batchsize] [num_of_batches]"<<std::endl; return 0;}
+    if(argc<4){std::cout<<"args: [imgsize] [batchsize] [num_of_batches]"<<std::endl; return 0;}
     input_imgsize = std::stoi(argv[1]);      // should be 512
     batchsize  = std::stoi(argv[2]);         // should be 8
     int num_of_batches = std::stoi(argv[3]); // should be 128/batchsize
