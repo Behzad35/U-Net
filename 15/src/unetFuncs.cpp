@@ -215,6 +215,19 @@ float avg_batch_loss(const ArrOfVols &Aoloss){
 	return sum/(input_imgsize*input_imgsize*batchsize);
 }
 
+void minmax_batch_loss(const ArrOfVols &Aoloss, float &min, float &max){
+	max = min = Aoloss[0](0,0,0);
+
+	for (int b=0; b<batchsize; ++b){
+		for(int x = 0; x < input_imgsize; ++x){
+			for(int y = 0; y < input_imgsize; ++y){
+				if (Aoloss[b](0,x,y)>max){max = Aoloss[b](0,x,y);}
+				if (Aoloss[b](0,x,y)<min){min = Aoloss[b](0,x,y);}
+			}
+		}
+	}
+}
+
 ArrOfVols create_ArrOfVols(int num_of_arrs, int depth, int width){
 	ArrOfVols output(new Volume[num_of_arrs]);
 	for (int i=0; i<num_of_arrs; ++i){

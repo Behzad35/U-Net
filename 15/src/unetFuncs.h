@@ -26,6 +26,7 @@ void upconv_backward(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols 
 void create_all_Aok_backward(ConvStruct *conv_struct, int num_of_convstructs);
 void compute_Aoloss(ArrOfVols &Aoloss, ArrOfVols const &Aof_final, ArrOfVols const &Ao_annots);
 float avg_batch_loss(const ArrOfVols &Aoloss);
+void minmax_batch_loss(const ArrOfVols &Aoloss, float &min, float &max);
 ArrOfVols create_ArrOfVols(int num_of_arrs, int depth, int width);
 void compute_Aok_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient);
 void compute_Aok_uc_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient);

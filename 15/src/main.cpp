@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
 
             // ReadImages(layers[0][0].Aof, batchNr, batchsize, input_imgsize);
             // ReadAnnot(Ao_annots, batchNr, batchsize, input_imgsize);
-            
+
             read_img_text(layers[0][0].Aof, batchNr);
             read_annot_text(Ao_annots, batchNr);
 
@@ -83,12 +83,15 @@ int main(int argc, char *argv[]){
             if(write_segmap) compute_segmap(layers[0][6].Aof, Ao_segmap);
             compute_Aoloss(Aoloss, layers[0][6].Aof, Ao_annots); // compute loss from annots
             loss_sum += avg_batch_loss(Aoloss);
+            float min, max;
+            minmax_batch_loss(Aoloss, min, max);
+
             create_all_Aok_backward(conv_struct, num_of_convstructs);	//create all conv kernles for finding error tensors in the backward pass
             backward_pass(layers, num_of_layers, Ao_annots);
             create_all_Aok_gradient(layers, num_of_layers);
             update_all_Aok(conv_struct, num_of_convstructs); // update all kernels from thier gradients
             std::cout<< "{{{{{{{{{{{ batch ("<< batchNr<< ") avg_loss = "<< loss_sum<< " }}}}}}}}}}}" <<std::endl;
-
+            std::cout<< "min = "<< min<< " max = "<< max<<std::endl;
         }
         std::cout<<"-------------------------\n{{{{{{{{{{{{{{ Loss = "<< loss_sum/num_of_batches <<" }}}}}}}}}}}}}}\n-------------------------"<< std::endl;
         
