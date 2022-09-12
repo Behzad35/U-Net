@@ -9,6 +9,8 @@ ConvStruct::ConvStruct(int num_of_inputs, int num_of_outputs, int batchsize, int
 	Aof(new Volume[batchsize]),
 	Aoe(new Volume[batchsize]),
 	Aok(new Volume[out]),
+	Aom_adam(new Volume[out]),
+	Aov_adam(new Volume[out]),
 	Aok_gradient(new Volume[out]),
 	Aok_back(new Volume[in])
 	{
@@ -19,6 +21,8 @@ ConvStruct::ConvStruct(int num_of_inputs, int num_of_outputs, int batchsize, int
 		for (int i=0; i<out; ++i){
 			Aok[i]=Volume(in, kernel_size);
 			Aok_gradient[i]=Volume(in, kernel_size);
+			Aom_adam[i]=Volume(in, kernel_size);
+			Aov_adam[i]=Volume(in, kernel_size);
 		}
 		for (int i=0; i<in; ++i){
 			Aok_back[i]=Volume(out, kernel_size);

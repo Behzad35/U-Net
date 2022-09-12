@@ -8,5 +8,5 @@ struct ConvStruct{
 	typedef std::shared_ptr<Volume[]> ArrOfVols;
 	
 	int in, out, batchsize, padded_imgsize, kernel_size;
-	ArrOfVols Aof, Aoe, Aok, Aok_gradient, Aok_back;
+	ArrOfVols Aof, Aoe, Aok, Aok_gradient, Aok_back, Aom_adam, Aov_adam;
 };

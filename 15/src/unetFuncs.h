@@ -5,6 +5,10 @@
 #include <omp.h>
 #include "ConvStruct.h"
 #include "Volume.h"
+#include <random>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 extern int batchsize;
 extern int input_imgsize;
@@ -31,5 +35,12 @@ void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs);
 void forward_pass(ConvStruct **layers, int num_of_layers);
 void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_annots);
 void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_of_layers, int channel_size);
+void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap);
+void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, float value);
+void print_arr(const ArrOfVols &arr, int index, int depth, int *range_x, int *range_y, std::string filename);
+float vol_avg(const ArrOfVols &arr);
+float kernel_avg(const ArrOfVols &arr, int num_of_kernels);
+void read_img_text(ArrOfVols &arr, int batchNr);
+void read_annot_text(ArrOfVols &arr, int batchNr);
 
 #endif

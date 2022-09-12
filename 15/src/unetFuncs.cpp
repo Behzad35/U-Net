@@ -3,6 +3,7 @@
 int batchsize;
 int input_imgsize;
 float learning_rate;
+bool debug = false;
 
 void relu(ArrOfVols &input){
 	int num_of_features = input[0].d;
@@ -62,27 +63,30 @@ void conv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output, bo
 			}
 		}
 	}
+	if(debug) std::cout<< vol_avg(input) << "\t" << kernel_avg(kernel, output[0].d) << "\t" << vol_avg(output)<< std::endl;
 }
 
 void fullconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 	int num_of_kernels = output[0].d;
 	int depth_of_kernels = input[0].d;
-	int imgsize = input[0].w; // imgsize is not padded
+	int imgsize = input[0].w; // imgsize is padded
 
 	#pragma omp parallel for
 	for (int b=0; b<batchsize; ++b){
 		for(int i = 0; i < num_of_kernels; ++i){
 			for(int x = 1; x < imgsize-1; ++x){
 				for(int y = 1; y < imgsize-1; ++y){
-					float tmp = 0;
+					float tmp = 0.0;
 					for(int j = 0; j < depth_of_kernels; ++j){
 						tmp += input[b](j,x,y) * kernel[i](j,0,0); // i-th kernel applied to j-th input is added to i-th output	
 					}
-					output[b](i,x-1,y-1) = tmp;
+					// output[b](i,x-1,y-1) = tmp;
+					output[b](i,x,y) = tmp;
 				}
 			}
 		}
 	}
+	if(debug) std::cout<< vol_avg(input) << "\t" << kernel_avg(kernel,output[0].d) << "\t" << vol_avg(output)<< std::endl;
 }
 
 void avgpool(ArrOfVols const &input, ArrOfVols &output){ 
@@ -99,6 +103,7 @@ void avgpool(ArrOfVols const &input, ArrOfVols &output){
 			}
 		}
 	}
+	if(debug) std::cout<< vol_avg(input) << "\t" << vol_avg(output)<< std::endl; // for debug
 }
 
 void avgpool_backward(ArrOfVols const &input, ArrOfVols &output){ // adds new error to the one found from concat
@@ -118,6 +123,7 @@ void avgpool_backward(ArrOfVols const &input, ArrOfVols &output){ // adds new er
 			}
 		}
 	}
+	if(debug) std::cout<< vol_avg(input) << "\t" << vol_avg(output)<< std::endl;
 }
 
 void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
@@ -140,6 +146,7 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 			}
 		}
 	}
+	if(debug) std::cout<< vol_avg(input) << "\t" << kernel_avg(kernel,output[0].d) << "\t" << vol_avg(output)<< std::endl;
 }
 
 void upconv_backward(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
@@ -157,10 +164,11 @@ void upconv_backward(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols 
             }
         }
     }
+    if(debug) std::cout<< vol_avg(input) << "\t" << kernel_avg(kernel, output[0].d) << "\t" << vol_avg(output)<< std::endl;
 }
 
 void create_all_Aok_backward(ConvStruct *conv_struct, int num_of_convstructs){
-	// std::cout<<"create_all_Aok_backward"<<std::endl;
+	std::cout<<"create_all_Aok_backward"<<std::endl;
 	#pragma omp parallel for
 	for (int k=0; k<num_of_convstructs; ++k){
 		for (int j=0; j<conv_struct[k].in; ++j){ 	// depth of forward kernels aok[0].d
@@ -177,6 +185,7 @@ void create_all_Aok_backward(ConvStruct *conv_struct, int num_of_convstructs){
 }
 
 void compute_Aoloss(ArrOfVols &Aoloss, ArrOfVols const &Aof_final, ArrOfVols const &Ao_annots){
+	std::cout<<"compute_Aoloss"<<std::endl;
 	#pragma omp parallel for
 	for (int b=0; b<batchsize; ++b){
 		for(int x = 1; x < Aof_final[0].w-1; ++x){
@@ -189,6 +198,8 @@ void compute_Aoloss(ArrOfVols &Aoloss, ArrOfVols const &Aof_final, ArrOfVols con
 			}
 		}
 	}
+	if(debug) std::cout<< vol_avg(Aoloss) << "\t" << vol_avg(Aof_final) << "\t" << vol_avg(Ao_annots)<< std::endl;
+
 }
 
 float avg_batch_loss(const ArrOfVols &Aoloss){
@@ -218,8 +229,8 @@ ArrOfVols create_ArrOfVols(int num_of_arrs, int depth, int width){
 void compute_Aok_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient){
     for (int n = 0; n < old_error_tensor[0].d; ++n){ // the number of gradient kernels for each input = old_error_tensor[0].d
         for (int d = 0; d < input[0].d; ++d){ // the depth of each gradient kernel = input[0].d
-            for (int h = 0; h < Aok_gradient[0].w; ++h){ 
-                for (int w = 0; w < Aok_gradient[0].w; ++w){
+            for (int w = 0; w < Aok_gradient[0].w; ++w){
+               	for (int h = 0; h < Aok_gradient[0].w; ++h){ 
                     float tmp = 0;
                     for (int b = 0; b < batchsize; ++b){
 	                    for (int x = 1; x < old_error_tensor[0].w-1; ++x){
@@ -233,6 +244,8 @@ void compute_Aok_gradient(ArrOfVols const &input, ArrOfVols const &old_error_ten
             }
         }
     }
+    if(debug) std::cout<< vol_avg(input) << "\t" << vol_avg(old_error_tensor) << "\t" << kernel_avg(Aok_gradient,old_error_tensor[0].d)<< std::endl;
+
 }
 
 void compute_Aok_uc_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient){
@@ -258,16 +271,17 @@ void compute_Aok_uc_gradient(ArrOfVols const &input, ArrOfVols const &old_error_
 			Aok_gradient[n](d,1,1) = tmp4/batchsize;        
         }
     }
+    if(debug) std::cout<< vol_avg(input) << "\t" << vol_avg(old_error_tensor) << "\t" << kernel_avg(Aok_gradient,old_error_tensor[0].d)<< std::endl;
 }
 
 void create_all_Aok_gradient(ConvStruct **layers, int num_of_layers){
-	// std::cout<<"create_all_Aok_gradient"<< std::endl;
+	std::cout<<"create_all_Aok_gradient"<< std::endl;
 	compute_Aok_gradient(layers[0][5].Aof, layers[0][6].Aoe, layers[0][5].Aok_gradient);	// first layer has an additional kernel
-	for (int i=0; i<num_of_layers-2; ++i){
+	for (int i=0; i<=num_of_layers-2; ++i){
 		for (int k=0; k<5; ++k){
 			compute_Aok_gradient(layers[i][k].Aof, layers[i][k+1].Aoe, layers[i][k].Aok_gradient);
 		}
-		if(i==num_of_layers-1){break;}
+		if(i==num_of_layers-2){break;}
 		compute_Aok_uc_gradient(layers[i+1][5].Aof, layers[i][3].Aoe, layers[i+1][5].Aok_gradient);
 	}
 	// last layer
@@ -297,119 +311,143 @@ void compute_Aoe_final(ArrOfVols const &Aof_final, ArrOfVols &Aoe_final, const A
             }
         }
     }
+    if(debug) std::cout<< vol_avg(Aof_final) << "\t" << vol_avg(Aoe_final) << "\t" << vol_avg(Ao_annots)<< std::endl;
 }
 
 void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs){ // update all kernels from their gradient
-	// std::cout<<"update_all_Aok"<< std::endl;
+	std::cout<<"update_all_Aok"<< std::endl;
+	float beta1 = 0.9;
+	float beta2 = 0.999;
+	float alpha = 0.001;
+	float epsilon = 1e-8;
+	static int timestep=1;
+
 	#pragma omp parallel for
 	for (int k=0; k<num_of_convstructs; ++k){
+		float before;
+		float after;
+		if(debug) before=kernel_avg(conv_struct[k].Aok, conv_struct[k].out);
 		for (int i=0; i<conv_struct[k].out; ++i){	//num of kernels
 			for (int d=0; d<conv_struct[k].in; ++d){		// depth of kernels
 				for (int x=0; x<conv_struct[k].kernel_size; ++x){
 					for (int y=0; y<conv_struct[k].kernel_size; ++y){
-						conv_struct[k].Aok[i](d,x,y) = conv_struct[k].Aok[i](d,x,y) - learning_rate*conv_struct[k].Aok_gradient[i](d,x,y);
+						float grad = conv_struct[k].Aok_gradient[i](d,x,y);
+						// SGD =================
+						// if (grad > 1){ grad = 1.0;}
+						// else if (grad < -1){ grad = -1.0;}
+						// conv_struct[k].Aok[i](d,x,y) = conv_struct[k].Aok[i](d,x,y) - learning_rate * grad;
+						//=======================
+
+						// Adam ======================
+						conv_struct[k].Aom_adam[i](d,x,y) = beta1*conv_struct[k].Aom_adam[i](d,x,y) + (1-beta1)*grad;
+						conv_struct[k].Aov_adam[i](d,x,y) = beta2*conv_struct[k].Aov_adam[i](d,x,y) + (1-beta2)*grad*grad;
+						float m_hat = conv_struct[k].Aom_adam[i](d,x,y) / (1-pow(beta1, timestep));
+						float v_hat = conv_struct[k].Aov_adam[i](d,x,y) / (1-pow(beta2, timestep));
+						conv_struct[k].Aok[i](d,x,y) = conv_struct[k].Aok[i](d,x,y) - alpha*m_hat/(sqrt(v_hat)+epsilon);
+						// ======================
 					}
+
 				}
 			}
 		}
+		if(debug) after=kernel_avg(conv_struct[k].Aok, conv_struct[k].out);
+		if(debug) std::cout<<"("<<k<<") "<< before<< " -> "<< after <<std::endl;
 	}
+	timestep++;
 }
 
 void forward_pass(ConvStruct **layers, int num_of_layers){
 
-	// std::cout<<"================================== Forwared Pass ========================================"<< std::endl;
+	std::cout<<"================================== Forwared Pass ========================================"<< std::endl;
 
 	for (int i=0; i<num_of_layers; ++i){
-		// std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-		// std::cout<<"conv 1"<<std::endl;
+		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
+		std::cout<<"conv 1"<<std::endl;
 		conv(layers[i][0].Aof, layers[i][0].Aok, layers[i][1].Aof);
 		relu(layers[i][1].Aof);
 
-		// std::cout<<"conv 2"<<std::endl;
+		std::cout<<"conv 2"<<std::endl;
 		conv(layers[i][1].Aof, layers[i][1].Aok, layers[i][2].Aof);
 		relu(layers[i][2].Aof);
 
 		if (i==num_of_layers-1){break;}
-		// std::cout<<"avgpool to layer "<< i+1 <<std::endl;
+		std::cout<<"avgpool to layer "<< i+1 <<std::endl;
 		avgpool(layers[i][2].Aof, layers[i+1][0].Aof);
 
 	}
-		// std::cout<<"upconv to layer "<< num_of_layers-2 <<std::endl;
+		std::cout<<"upconv to layer "<< num_of_layers-2 <<std::endl;
 		upconv(layers[num_of_layers-1][2].Aof, layers[num_of_layers-1][2].Aok, layers[num_of_layers-2][3].Aof);
-		relu(layers[num_of_layers-2][3].Aof);
 
 	for (int i=num_of_layers-2; i>=0; --i){
-		// std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-		// std::cout<<"conv 3"<<std::endl;
+		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
+		std::cout<<"conv 3"<<std::endl;
 		conv(layers[i][3].Aof, layers[i][3].Aok, layers[i][4].Aof);
 		conv(layers[i][2].Aof, layers[i][2].Aok, layers[i][4].Aof, true); // 'true' means just add results, dont wipe previous values
 		relu(layers[i][4].Aof);
 
-		// std::cout<<"conv 4"<<std::endl;
+		std::cout<<"conv 4"<<std::endl;
 		conv(layers[i][4].Aof, layers[i][4].Aok, layers[i][5].Aof);
 		relu(layers[i][5].Aof);
 
 		if (i==0){break;}
-		// std::cout<<"upconv to layer "<< i <<std::endl;
+		std::cout<<"upconv to layer "<< i <<std::endl;
 		upconv(layers[i][5].Aof, layers[i][5].Aok, layers[i-1][3].Aof);
-		relu(layers[i-1][3].Aof);
 	}
 
-	// std::cout<<"fullconv"<<std::endl;
-	fullconv(layers[0][5].Aof, layers[0][5].Aok, layers[0][6].Aof);
-	relu(layers[0][6].Aof); // ---------------------------------------- do we relu last?
+	std::cout<<"fullconv"<<std::endl;
+	fullconv(layers[0][5].Aof, layers[0][5].Aok, layers[0][6].Aof); // no relu
 
-	// std::cout<< "\nForward pass done.\n"<<std::endl;
+	std::cout<< "\nForward pass done.\n"<<std::endl;
 }
 
 void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_annots){
 
-	// std::cout<<"================================== Backward Pass ========================================"<< std::endl;
-	// std::cout<<"First error tensor"<<std::endl;
+	std::cout<<"================================== Backward Pass ========================================"<< std::endl;
+	std::cout<<"First error tensor"<<std::endl;
 	compute_Aoe_final(layers[0][6].Aof, layers[0][6].Aoe, Ao_annots); // find gradient of loss wrt Aof_final to get Aoe_final
-
-	// std::cout<<"First back conv"<<std::endl;
+    
+	std::cout<<"First back conv"<<std::endl;
 	fullconv(layers[0][6].Aoe, layers[0][5].Aok_back, layers[0][5].Aoe);
 
 	for (int i=0; i<=num_of_layers-2; ++i){
-		// std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-		// std::cout<<"back conv 4"<<std::endl;
+		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
+		std::cout<<"back conv 4"<<std::endl;
 		conv(layers[i][5].Aoe, layers[i][4].Aok_back, layers[i][4].Aoe);
 
-		// std::cout<<"back conv 3"<<std::endl;
+		std::cout<<"back conv 3"<<std::endl;
 		conv(layers[i][4].Aoe, layers[i][3].Aok_back, layers[i][3].Aoe);
 		conv(layers[i][4].Aoe, layers[i][2].Aok_back, layers[i][2].Aoe);
 
 		if(i==num_of_layers-2){		
-			// std::cout<<"back upconv to layer "<< i+1 <<std::endl;
+			std::cout<<"back upconv to layer "<< i+1 <<std::endl;
 			upconv_backward(layers[i][3].Aoe, layers[i+1][2].Aok_back, layers[i+1][2].Aoe);
 		}
 		else{
-			// std::cout<<"back upconv to layer "<< i+1 <<std::endl;
+			std::cout<<"back upconv to layer "<< i+1 <<std::endl;
 			upconv_backward(layers[i][3].Aoe, layers[i+1][5].Aok_back, layers[i+1][5].Aoe); 
 		}
 	}
 
-	// std::cout<<"---------- Layer ("<< num_of_layers-1 <<") ----------"<<std::endl;
-	// std::cout<<"back conv 2"<<std::endl;
+	std::cout<<"---------- Layer ("<< num_of_layers-1 <<") ----------"<<std::endl;
+	std::cout<<"back conv 2"<<std::endl;
 	conv(layers[num_of_layers-1][2].Aoe, layers[num_of_layers-1][1].Aok_back, layers[num_of_layers-1][1].Aoe);
 
-	// std::cout<<"back conv 1"<<std::endl;
+	std::cout<<"back conv 1"<<std::endl;
 	conv(layers[num_of_layers-1][1].Aoe, layers[num_of_layers-1][0].Aok_back, layers[num_of_layers-1][0].Aoe);
 
 	for (int i=num_of_layers-2; i>=0; --i){
-		// std::cout<<"avgpool back to layer "<< i <<std::endl;
+		std::cout<<"avgpool back to layer "<< i <<std::endl;
 		avgpool_backward(layers[i+1][0].Aoe, layers[i][2].Aoe); // adds error to the error found from concat (doesn't overwrite)
 
-		// std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-		// std::cout<<"back conv 2"<<std::endl;
+		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
+		std::cout<<"back conv 2"<<std::endl;
 		conv(layers[i][2].Aoe, layers[i][1].Aok_back, layers[i][1].Aoe);
 
-		// std::cout<<"back conv 1"<<std::endl;
+		std::cout<<"back conv 1"<<std::endl;
 		conv(layers[i][1].Aoe, layers[i][0].Aok_back, layers[i][0].Aoe);
 	}
 
-	// std::cout<< "\nBackward pass done.\n"<<std::endl;
+	std::cout<< "\nBackward pass done.\n"<<std::endl;
 }
 
 void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_of_layers, int channel_size){
@@ -421,6 +459,8 @@ void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_o
         if (layer_index==0) {
             layers[layer_index] = &conv_struct[0];
             layers[layer_index][0] = ConvStruct(3,                 num_of_features,      batchsize, padded_imgsize, 3);
+            // layers[layer_index][1] = ConvStruct(num_of_features,   3,      batchsize, padded_imgsize, 3); //for debug
+            
             layers[layer_index][1] = ConvStruct(num_of_features,   num_of_features,      batchsize, padded_imgsize, 3);
             layers[layer_index][2] = ConvStruct(num_of_features,   num_of_features*2,    batchsize, padded_imgsize, 3);
             layers[layer_index][3] = ConvStruct(num_of_features,   num_of_features*2,    batchsize, padded_imgsize, 3);
@@ -447,4 +487,139 @@ void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_o
 
         }
     }
+}
+
+void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap){ // segmap not padded (for debug)
+	for (int b=0; b<batchsize; ++b){
+		for (int x=1; x<Aof_final[0].w-1; ++x){
+			for (int y=1; y<Aof_final[0].w-1; ++y){
+				if(Aof_final[b](0,x,y)>Aof_final[b](1,x,y) && Aof_final[b](0,x,y)>Aof_final[b](2,x,y)){
+					Ao_segmap[b](0,x-1,y-1)=1;
+				}
+				else if(Aof_final[b](1,x,y)>Aof_final[b](0,x,y) && Aof_final[b](1,x,y)>Aof_final[b](2,x,y)){
+					Ao_segmap[b](0,x-1,y-1)=2;
+				}
+				else if(Aof_final[b](2,x,y)>Aof_final[b](0,x,y) && Aof_final[b](2,x,y)>Aof_final[b](1,x,y)){
+					Ao_segmap[b](0,x-1,y-1)=3;
+				}
+				else {
+					Ao_segmap[b](0,x-1,y-1)=-1;
+				}
+			}
+		}
+	}
+}
+
+void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, float value){ 	// for debug
+	const int range_from  = -1;
+    const int range_to    = 1;
+    std::random_device                  rand_dev;
+    std::mt19937                        generator(rand_dev());
+    std::uniform_int_distribution<int>  distr(range_from, range_to);
+	for (int k=0; k<num_of_convstructs; ++k){
+		for (int i=0; i<conv_struct[k].out; ++i){	//num of kernels
+			for (int d=0; d<conv_struct[k].in; ++d){		// depth of kernels
+				for (int x=0; x<conv_struct[k].kernel_size; ++x){
+					for (int y=0; y<conv_struct[k].kernel_size; ++y){
+						// conv_struct[k].Aok[i](d,x,y)=distr(generator)/6.0f;
+						conv_struct[k].Aok[i](d,x,y)=value*(k+1)*(x+ y + 1/(i+1) + 1/(d+1));
+						if(conv_struct[k].Aok[i](d,x,y)>1 || conv_struct[k].Aok[i](d,x,y)<-1){
+							std::cout<< "bad weight"<<std::endl;
+							exit(1);}
+					}
+
+				}
+			}
+		}
+	}
+
+
+}
+
+void print_arr(const ArrOfVols &arr, int index, int depth, int *range_x, int *range_y, std::string filename){ // prints any ArrOfVols
+	std::ofstream outfile;
+	outfile.open(filename);
+	for (int y=range_y[0]; y<range_y[1] ; ++y){
+		for (int x=range_x[0]; x<range_x[1] ; ++x){
+			outfile<<arr[index](depth,x,y)<< "\t";
+		}
+		outfile<<std::endl;
+	}
+	outfile.close();
+}
+
+float vol_avg(const ArrOfVols &arr){		// for debug
+	float avg;
+    for (int b = 0; b < batchsize; ++b){
+    	for (int i=0; i<arr[0].d; ++i){
+	    	for (int x = 0; x < arr[0].w; ++x){
+	        	for (int y = 0; y < arr[0].w; ++y){
+        			avg += arr[b](i, x, y);
+        		}
+        	}
+        }
+    }
+    return avg/(batchsize*(arr[0].w)*(arr[0].w)*(arr[0].d));
+}
+
+float kernel_avg(const ArrOfVols &arr, int num_of_kernels){		// for debug
+	float avg;
+    for (int n = 0; n < num_of_kernels; ++n){
+    	for (int i=0; i<arr[0].d; ++i){
+	    	for (int x = 0; x < arr[0].w; ++x){
+	        	for (int y = 0; y < arr[0].w; ++y){
+        			avg += arr[n](i, x, y);
+        		}
+        	}
+        }
+    }
+    return avg/(num_of_kernels*(arr[0].w)*(arr[0].w)*(arr[0].d));
+}
+
+void read_img_text(ArrOfVols &arr, int batchNr){	// read imges from .csv
+	for(int b=0; b<batchsize; ++b){
+		int img_num = batchsize*batchNr + b;
+		std::ifstream ch0("img_csv/img_"+std::to_string(img_num)+"_ch0.csv");
+		std::ifstream ch1("img_csv/img_"+std::to_string(img_num)+"_ch1.csv");
+		std::ifstream ch2("img_csv/img_"+std::to_string(img_num)+"_ch2.csv");
+		if(!ch0.is_open() || !ch1.is_open() || !ch2.is_open() ){
+			std::cout<<"invalid img"<<std::endl;
+			exit(1);
+		}
+		for (int y=0; y<input_imgsize; ++y){
+			std::string l0;
+			std::string l1;
+			std::string l2;
+			getline(ch0, l0);
+			getline(ch1, l1);
+			getline(ch2, l2);
+			std::istringstream line0(l0);
+			std::istringstream line1(l1);
+			std::istringstream line2(l2);
+			for (int x=0; x<input_imgsize; ++x){
+				line0 >> arr[b](0,x,y);
+				line1 >> arr[b](1,x,y);
+				line2 >> arr[b](2,x,y);
+			}
+		}
+	}
+}
+
+void read_annot_text(ArrOfVols &arr, int batchNr){
+	for (int b=0; b<batchsize; ++b){
+		int img_num = batchsize*batchNr +b;
+		std::ifstream ch0("annot_csv/annot_"+std::to_string(img_num)+".csv");
+		if(!ch0.is_open()){
+			std::cout<<"invalid annot"<<std::endl;
+			exit(1);
+		}
+		for (int y=0; y<input_imgsize; ++y){
+			std::string l0;
+			getline(ch0, l0);
+			std::istringstream line0(l0);
+			for (int x=0; x<input_imgsize; ++x){
+				line0 >> arr[b](0,x,y);
+			}
+		}
+	}
 }
