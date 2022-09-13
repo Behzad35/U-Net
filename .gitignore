@@ -1,0 +1,5 @@
+*.o
+*.d
+
+/15/bin
+/15/resultImages1
