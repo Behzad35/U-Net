@@ -2,7 +2,7 @@ BINARY=bin
 CODEDIRS =. src
 INCDIRS=. include
 
-CC = g++
+CXX = g++
 OPT=-O0
 
 LDFLAGS= -fopenmp
@@ -12,7 +12,7 @@ LDLIBS= -lm -lpthread -lX11 -ljpeg -lpng
 DEPFLAGS=-MP -MD
 
 # automatically add the -I onto each include directory
-CFLAGS=-Wall -Wextra -g -fopenmp -O3 -DNDEBUG -std=c++11 -v $(foreach D,$(INCDIRSI), -I$(D)) $(OPT) $(DEPFLAGS)
+CXXFLAGS=-Wall -Wextra -g -fopenmp -O3 -DNDEBUG -std=c++11 -v $(foreach D,$(INCDIRSI), -I$(D)) $(OPT) $(DEPFLAGS)
 
 # for-style iteration and regex completion
 CFILES=$(foreach D,$(CODEDIRS),$(wildcard $(D)/*.cpp))
@@ -23,10 +23,10 @@ DEPFILES=$(patsubst %.cpp,%.d,$(CFILES))
 all: $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(CC) -o $@ $(LDFLAGS) $(OBJECTS) $(LDLIBS)
+	$(CXX) -o $@ $(LDFLAGS) $(OBJECTS) $(LDLIBS)
 
 %o:%.c
-	$(CC) $(CFLAGS) -c -o $@ $^
+	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
 clean:
 	rm -rf $(BINARY) $(OBJECTS) $(DEPFILES)
