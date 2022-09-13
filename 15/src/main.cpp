@@ -29,9 +29,10 @@ int main(int argc, char *argv[]){
   
     std::cout<<"init kernels"<<std::endl;
     init_kernels(layers);
-    // init_kernel_guess(conv_struct, num_of_convstructs, 0.001); ///////// for debug
+    // read_backup_kernels(conv_struct, num_of_convstructs);
+    // init_kernel_guess(conv_struct, num_of_convstructs, 0.001); 
 
-    for (int i=0; i<epochs; ++i){ 
+    for (int i=10; i<epochs; ++i){ 
         std::cout<<"\n========================================================="<< std::endl;
         std::cout<<"{{{{{{{{{{{{{{{{{{{{{{ epoch ("<< i << ") }}}}}}}}}}}}}}}}}}}}}}" << std::endl;
         std::cout<<"=========================================================\n"<< std::endl;
@@ -48,32 +49,32 @@ int main(int argc, char *argv[]){
             read_annot_text(Ao_annots, batchNr);
 
             ////////////////////////////////////////////////////////// for debug /////////////////////////////////////
-        /*
-            std::cout<< "|||conv 0 to 1|||" << std::endl;
-            conv(layers[0][0].Aof, layers[0][0].Aok, layers[0][1].Aof);
-            relu(layers[0][1].Aof);
-            std::cout<< "|||fullconv 1 to 6|||" << std::endl;
-            fullconv(layers[0][1].Aof, layers[0][1].Aok, layers[0][6].Aof);
+        
+            // std::cout<< "|||conv 0 to 1|||" << std::endl;
+            // conv(layers[0][0].Aof, layers[0][0].Aok, layers[0][1].Aof);
+            // relu(layers[0][1].Aof);
+            // std::cout<< "|||fullconv 1 to 6|||" << std::endl;
+            // fullconv(layers[0][1].Aof, layers[0][1].Aok, layers[0][6].Aof);
 
-            compute_segmap(layers[0][6].Aof, Ao_segmap);
-            compute_Aoloss(Aoloss, layers[0][6].Aof, Ao_annots);
-            loss_sum += avg_batch_loss(Aoloss);
-            create_all_Aok_backward(conv_struct, num_of_convstructs);
-            std::cout<< "|||compute_Aoe_final|||" << std::endl;
-            compute_Aoe_final(layers[0][6].Aof, layers[0][6].Aoe, Ao_annots); 
+            // compute_segmap(layers[0][6].Aof, Ao_segmap);
+            // compute_Aoloss(Aoloss, layers[0][6].Aof, Ao_annots);
+            // loss_sum += avg_batch_loss(Aoloss);
+            // create_all_Aok_backward(conv_struct, num_of_convstructs);
+            // std::cout<< "|||compute_Aoe_final|||" << std::endl;
+            // compute_Aoe_final(layers[0][6].Aof, layers[0][6].Aoe, Ao_annots); 
 
-            std::cout<< "|||fullconv back|||" << std::endl;
-            fullconv(layers[0][6].Aoe, layers[0][1].Aok_back, layers[0][1].Aoe);
-            std::cout<< "|||back conv 1 to 0|||" << std::endl;
-            conv(layers[0][1].Aoe, layers[0][0].Aok_back, layers[0][0].Aoe);
+            // std::cout<< "|||fullconv back|||" << std::endl;
+            // fullconv(layers[0][6].Aoe, layers[0][1].Aok_back, layers[0][1].Aoe);
+            // std::cout<< "|||back conv 1 to 0|||" << std::endl;
+            // conv(layers[0][1].Aoe, layers[0][0].Aok_back, layers[0][0].Aoe);
 
 
-            std::cout<< "|||compute_Aok_gradient 1|||" << std::endl;
-            compute_Aok_gradient(layers[0][1].Aof, layers[0][6].Aoe, layers[0][1].Aok_gradient);
-            std::cout<< "|||compute_Aok_gradient 0|||" << std::endl;
-            compute_Aok_gradient(layers[0][0].Aof, layers[0][1].Aoe, layers[0][0].Aok_gradient);
-            update_all_Aok(conv_struct, num_of_convstructs);
-        */
+            // std::cout<< "|||compute_Aok_gradient 1|||" << std::endl;
+            // compute_Aok_gradient(layers[0][1].Aof, layers[0][6].Aoe, layers[0][1].Aok_gradient);
+            // std::cout<< "|||compute_Aok_gradient 0|||" << std::endl;
+            // compute_Aok_gradient(layers[0][0].Aof, layers[0][1].Aoe, layers[0][0].Aok_gradient);
+            // update_all_Aok(conv_struct, num_of_convstructs);
+        
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // displayImage(layers[0][0].Aof,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
@@ -85,20 +86,20 @@ int main(int argc, char *argv[]){
             loss_sum += avg_batch_loss(Aoloss);
             float min, max;
             minmax_batch_loss(Aoloss, min, max);
-
             create_all_Aok_backward(conv_struct, num_of_convstructs);	//create all conv kernles for finding error tensors in the backward pass
             backward_pass(layers, num_of_layers, Ao_annots);
             create_all_Aok_gradient(layers, num_of_layers);
             update_all_Aok(conv_struct, num_of_convstructs); // update all kernels from thier gradients
             std::cout<< "{{{{{{{{{{{ batch ("<< batchNr<< ") avg_loss = "<< loss_sum<< " }}}}}}}}}}}" <<std::endl;
             std::cout<< "min = "<< min<< " max = "<< max<<std::endl;
+            
         }
         std::cout<<"-------------------------\n{{{{{{{{{{{{{{ Loss = "<< loss_sum/num_of_batches <<" }}}}}}}}}}}}}}\n-------------------------"<< std::endl;
-        
+        if(i>0 && i%4==0) backup_kernels(conv_struct, num_of_convstructs);
         if(write_segmap){
             int range_x[2]={0, Ao_segmap[0].w};
             int range_y[2]={0, Ao_segmap[0].w};
-            print_arr(Ao_segmap, 0, 0, range_x, range_y, "Ao_segmap_ep"+std::to_string(i));
+            print_arr(Ao_segmap, 0, 0, range_x, range_y, "Ao_segmap_ep"+std::to_string(i)+".csv");
         }
             
     }

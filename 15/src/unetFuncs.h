@@ -43,5 +43,7 @@ float vol_avg(const ArrOfVols &arr);
 float kernel_avg(const ArrOfVols &arr, int num_of_kernels);
 void read_img_text(ArrOfVols &arr, int batchNr);
 void read_annot_text(ArrOfVols &arr, int batchNr);
+void backup_kernels(ConvStruct *conv_struct, int num_of_convstructs);
+void read_backup_kernels(ConvStruct *conv_struct, int num_of_convstructs);
 
 #endif

@@ -636,3 +636,39 @@ void read_annot_text(ArrOfVols &arr, int batchNr){
 		}
 	}
 }
+
+void backup_kernels(ConvStruct *conv_struct, int num_of_convstructs){
+	for (int k=0; k<num_of_convstructs; ++k){
+		for (int i=0; i<conv_struct[k].out; ++i){
+			for (int j=0; j<conv_struct[k].in; ++j){
+				std::ofstream outfile("backup_kernel_csv/Convstruct_"+std::to_string(k)+"_"+std::to_string(i)+"_"+std::to_string(j)+".csv");
+				if(!outfile.is_open()){std::cout<<"couldnt open backup kernel outfile"<<std::endl; exit(1);}
+				for (int y=0; y<conv_struct[k].kernel_size; ++y){
+					for (int x=0; x<conv_struct[k].kernel_size; ++x){
+						outfile << conv_struct[k].Aok[i](j,x,y) << "\t";
+					}
+					outfile<<std::endl;
+				}
+			}
+		}
+	}
+}
+
+void read_backup_kernels(ConvStruct *conv_struct, int num_of_convstructs){
+	for (int k=0; k<num_of_convstructs; ++k){
+		for (int i=0; i<conv_struct[k].out; ++i){
+			for (int j=0; j<conv_struct[k].in; ++j){
+				std::ifstream infile("backup_kernel_csv/Convstruct_"+std::to_string(k)+"_"+std::to_string(i)+"_"+std::to_string(j)+".csv");
+				if(!infile.is_open()){std::cout<<"couldnt open backup kernel infile"<<std::endl; exit(1);}
+				std::string line;
+				for (int y=0; y<conv_struct[k].kernel_size; ++y){
+					getline(infile, line);
+					std::istringstream inputline(line);
+					for (int x=0; x<conv_struct[k].kernel_size; ++x){
+						inputline >> conv_struct[k].Aok[i](j,x,y) ;
+					}
+				}
+			}
+		}
+	}	
+}
