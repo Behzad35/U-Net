@@ -240,6 +240,7 @@ ArrOfVols create_ArrOfVols(int num_of_arrs, int depth, int width){
 //so for each batch, there will be (batchsize * error tensor depth) gradient kernels. 
 
 void compute_Aok_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient){
+    #pragma omp parallel for
     for (int n = 0; n < old_error_tensor[0].d; ++n){ // the number of gradient kernels for each input = old_error_tensor[0].d
         for (int d = 0; d < input[0].d; ++d){ // the depth of each gradient kernel = input[0].d
             for (int w = 0; w < Aok_gradient[0].w; ++w){
@@ -268,6 +269,7 @@ void compute_Aok_uc_gradient(ArrOfVols const &input, ArrOfVols const &old_error_
             float tmp2 = 0;
             float tmp3 = 0;
             float tmp4 = 0;
+            #pragma omp parallel for
             for (int b = 0; b < batchsize; ++b){
                 for (int x = 1; x < input[0].w-1; x+=2){
                     for (int y = 1; y < input[0].w-1; y+=2){
