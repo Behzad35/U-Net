@@ -25,7 +25,7 @@ all: $(BINARY)
 $(BINARY): $(OBJECTS)
 	$(CXX) -o $@ $(LDFLAGS) $(OBJECTS) $(LDLIBS)
 
-%o:%.c
+%o:%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
 clean:
