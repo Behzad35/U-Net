@@ -8,8 +8,8 @@ bool debug = false;
 void relu(ArrOfVols &input){
 	int num_of_features = input[0].d;
 	int imgsize = input[0].w; // includes padding (doesnt matter but just in case)
-	#pragma omp parallel for
 	for (int b=0; b<batchsize; ++b){
+	    #pragma omp parallel for
 		for(int i = 0; i < num_of_features; ++i){
 			for(int x = 1; x < imgsize-1; ++x){
 				for(int y = 1; y < imgsize-1; ++y){
@@ -26,8 +26,8 @@ void conv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output, bo
 	int width_of_kernels = kernel[0].w;
 
 	if (dont_wipe_before_adding){
-		#pragma omp parallel for
 		for (int b=0; b<batchsize; ++b){
+		    #pragma omp parallel for
 			for(int i = 0; i < num_of_kernels; ++i){	// just add to old output
 				for(int x = 0; x < imgsize-2; ++x){
 					for(int y = 0; y < imgsize-2; ++y){
@@ -44,8 +44,8 @@ void conv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output, bo
 		}
 	}
 	else{
-		#pragma omp parallel for
 		for (int b=0; b<batchsize; ++b){
+		    #pragma omp parallel for
 			for(int i = 0; i < num_of_kernels; ++i){	// zero out old output before adding
 				for(int x = 0; x < imgsize-2; ++x){
 					for(int y = 0; y < imgsize-2; ++y){
@@ -71,8 +71,8 @@ void fullconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output
 	int depth_of_kernels = input[0].d;
 	int imgsize = input[0].w; // imgsize is padded
 
-	#pragma omp parallel for
 	for (int b=0; b<batchsize; ++b){
+	    #pragma omp parallel for
 		for(int i = 0; i < num_of_kernels; ++i){
 			for(int x = 1; x < imgsize-1; ++x){
 				for(int y = 1; y < imgsize-1; ++y){
@@ -93,8 +93,8 @@ void avgpool(ArrOfVols const &input, ArrOfVols &output){
 	int num_of_features = input[0].d;
 	int imgsize = input[0].w; // includes padding
 
-	#pragma omp parallel for
 	for (int b=0; b<batchsize; ++b){
+	    #pragma omp parallel for
 		for (int i=0; i<num_of_features; ++i){
 			for (int x=1; x<imgsize-1; x+=2){
 				for(int y=1; y<imgsize-1; y+=2){
@@ -110,8 +110,8 @@ void avgpool_backward(ArrOfVols const &input, ArrOfVols &output){ // adds new er
 	int num_of_features = input[0].d;
 	int imgsize = input[0].w; // includes padding
 
-	#pragma omp parallel for
 	for (int b=0; b<batchsize; ++b){
+	    #pragma omp parallel for
 		for (int i=0; i<num_of_features; ++i){
 			for (int x=1; x<imgsize-1; ++x){
 				for(int y=1; y<imgsize-1; ++y){
@@ -131,8 +131,8 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 	int depth_of_kernels = input[0].d;
 	int imgsize = input[0].w; // includes padding
 
-	#pragma omp parallel for
 	for (int b=0; b<batchsize; ++b){
+	    #pragma omp parallel for
 		for (int i=0; i<num_of_kernels; ++i){
 			for (int x=1; x<imgsize-1; ++x){
 				for (int y=1; y<imgsize-1; ++y){
@@ -219,6 +219,7 @@ void minmax_batch_loss(const ArrOfVols &Aoloss, float &min, float &max){
 	max = min = Aoloss[0](0,0,0);
 
 	for (int b=0; b<batchsize; ++b){
+        #pragma omp parallel for
 		for(int x = 0; x < input_imgsize; ++x){
 			for(int y = 0; y < input_imgsize; ++y){
 				if (Aoloss[b](0,x,y)>max){max = Aoloss[b](0,x,y);}
@@ -269,8 +270,8 @@ void compute_Aok_uc_gradient(ArrOfVols const &input, ArrOfVols const &old_error_
             float tmp2 = 0;
             float tmp3 = 0;
             float tmp4 = 0;
-            #pragma omp parallel for
             for (int b = 0; b < batchsize; ++b){
+	            #pragma omp parallel for
                 for (int x = 1; x < input[0].w-1; x+=2){
                     for (int y = 1; y < input[0].w-1; y+=2){
                     	tmp1 += old_error_tensor[b](n,2*x-1,2*y-1) * input[b](d,x,y); 
@@ -307,8 +308,8 @@ void create_all_Aok_gradient(ConvStruct **layers, int num_of_layers){
 }
 
 void compute_Aoe_final(ArrOfVols const &Aof_final, ArrOfVols &Aoe_final, const ArrOfVols &Ao_annots){
-	#pragma omp parallel for
     for (int b = 0; b < batchsize; ++b){
+        #pragma omp parallel for
     	for (int x = 1; x < Aof_final[0].w-1; ++x){
         	for (int y = 1; y < Aof_final[0].w-1; ++y){
                 float sum = 0;
