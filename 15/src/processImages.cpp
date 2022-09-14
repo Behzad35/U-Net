@@ -1,4 +1,5 @@
 #include "processImages.h"
+#include "CImg.h"
 
 using namespace cimg_library;
 
@@ -60,11 +61,14 @@ void ReadAnnot(ConvStruct::ArrOfVols &output, int batchNr, int batchSize, int in
 // b is the b-th image in the batch, c is the c-th channel in that ArrOfVols for that image
 //===================================================
 void displayImage(ConvStruct::ArrOfVols &output, int b, int c, int input_imgsize){ 
-    cimg_library::CImg<float> imageOut(input_imgsize,input_imgsize,1,1,0);
+    cimg_library::CImg<float> imageOut(input_imgsize,input_imgsize,1,3,0);
+    cimg_library::CImgDisplay disp(512,512,"display");
     cimg_forXYC(imageOut, x, y, c){
         imageOut(x,y,c) = output[b](c,x,y);
     }
-    imageOut.display();
+    imageOut.display(disp);
+    disp.wait(500);
+    disp.close();
 }
 
 void convert_all_imgs_to_csv(){ // converts all images to .csv files

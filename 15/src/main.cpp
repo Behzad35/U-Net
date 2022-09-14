@@ -77,7 +77,7 @@ int main(int argc, char *argv[]){
         
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // displayImage(layers[0][0].Aof,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
+            displayImage(layers[0][6].Aof,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
             
 
             forward_pass(layers, num_of_layers);
