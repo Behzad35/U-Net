@@ -175,7 +175,7 @@ void create_all_Aok_backward(ConvStruct *conv_struct, int num_of_convstructs){
 			for (int i=0; i<conv_struct[k].out; ++i){ 	// num of forward kernels 	aok_back[0].d
 				for (int x=0; x<conv_struct[k].kernel_size; ++x){
 					for (int y=0; y<conv_struct[k].kernel_size; ++y){
-						conv_struct[k].Aok_back[j](i, x, y) = conv_struct[k].Aok[i](j, x, y);
+						conv_struct[k].Aok_back[j](i, y, x) = conv_struct[k].Aok[i](j, x, y);
 					}
 				}
 			}
