@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
         std::cout<<"\n========================================================="<< std::endl;
         std::cout<<"{{{{{{{{{{{{{{{{{{{{{{ epoch ("<< i << ") }}}}}}}}}}}}}}}}}}}}}}" << std::endl;
         std::cout<<"=========================================================\n"<< std::endl;
-        float loss_sum=0.0;
+        double loss_sum=0.0;
         for (int batchNr=0; batchNr<num_of_batches; ++batchNr){
             std::cout<<"\n---------------------------------------------------------------"<< std::endl;
             std::cout<< "{{ batchNr = " << batchNr << " }}"<< std::endl;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
             if(write_segmap) compute_segmap(layers[0][6].Aof, Ao_segmap);
             compute_Aoloss(Aoloss, layers[0][6].Aof, Ao_annots); // compute loss from annots
             loss_sum += avg_batch_loss(Aoloss);
-            float min, max;
+            double min, max;
             minmax_batch_loss(Aoloss, min, max);
             create_all_Aok_backward(conv_struct, num_of_convstructs);	//create all conv kernles for finding error tensors in the backward pass
             backward_pass(layers, num_of_layers, Ao_annots);

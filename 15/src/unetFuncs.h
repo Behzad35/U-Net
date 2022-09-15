@@ -12,7 +12,7 @@
 
 extern int batchsize;
 extern int input_imgsize;
-extern float learning_rate;
+extern double learning_rate;
 
 using ArrOfVols = ConvStruct::ArrOfVols;
 
@@ -25,8 +25,8 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output);
 void upconv_backward(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output);
 void create_all_Aok_backward(ConvStruct *conv_struct, int num_of_convstructs);
 void compute_Aoloss(ArrOfVols &Aoloss, ArrOfVols const &Aof_final, ArrOfVols const &Ao_annots);
-float avg_batch_loss(const ArrOfVols &Aoloss);
-void minmax_batch_loss(const ArrOfVols &Aoloss, float &min, float &max);
+double avg_batch_loss(const ArrOfVols &Aoloss);
+void minmax_batch_loss(const ArrOfVols &Aoloss, double &min, double &max);
 ArrOfVols create_ArrOfVols(int num_of_arrs, int depth, int width);
 void compute_Aok_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient);
 void compute_Aok_uc_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient);
@@ -37,10 +37,10 @@ void forward_pass(ConvStruct **layers, int num_of_layers);
 void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_annots);
 void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_of_layers, int channel_size);
 void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap);
-void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, float value);
+void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, double value);
 void print_arr(const ArrOfVols &arr, int index, int depth, int *range_x, int *range_y, std::string filename);
-float vol_avg(const ArrOfVols &arr);
-float kernel_avg(const ArrOfVols &arr, int num_of_kernels);
+double vol_avg(const ArrOfVols &arr);
+double kernel_avg(const ArrOfVols &arr, int num_of_kernels);
 void read_img_text(ArrOfVols &arr, int batchNr);
 void read_annot_text(ArrOfVols &arr, int batchNr);
 void backup_kernels(ConvStruct *conv_struct, int num_of_convstructs);

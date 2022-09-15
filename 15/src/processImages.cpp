@@ -13,7 +13,7 @@ void ReadImages(ConvStruct::ArrOfVols &output, int batchNr, int batchSize, int i
         std::ostringstream string_builder;
         string_builder << "training_data/images/image" << imageCounter << ".jpg";
         path = string_builder.str();
-        cimg_library::CImg<float> imageIn(path.c_str());
+        cimg_library::CImg<double> imageIn(path.c_str());
         
         for(int i = 0; i<input_imgsize; ++i){
             for(int j = 0; j <input_imgsize; ++j){
@@ -22,7 +22,7 @@ void ReadImages(ConvStruct::ArrOfVols &output, int batchNr, int batchSize, int i
                 output[b](c,i+1,j+1)  = *imageIn.data(i,j,0,c)/255; // read image into interior of output 
             }
         }
-        // float test=0.0;
+        // double test=0.0;
         // for(int i = 0; i<input_imgsize; ++i){
         //     for(int j = 0; j <input_imgsize; ++j){
         //         for(int c=0; c<3; ++c) // R=0, G=1, B=2
@@ -44,7 +44,7 @@ void ReadAnnot(ConvStruct::ArrOfVols &output, int batchNr, int batchSize, int in
         std::ostringstream string_builder;
         string_builder << "training_data/annotations/annotation" << imageCounter << ".png";
         path = string_builder.str();
-        cimg_library::CImg<float> imageIn(path.c_str());
+        cimg_library::CImg<double> imageIn(path.c_str());
         
         for(int i = 0; i<input_imgsize; ++i){
             for(int j = 0; j < input_imgsize; ++j){
@@ -61,7 +61,7 @@ void ReadAnnot(ConvStruct::ArrOfVols &output, int batchNr, int batchSize, int in
 // b is the b-th image in the batch, c is the c-th channel in that ArrOfVols for that image
 //===================================================
 void displayImage(ConvStruct::ArrOfVols &output, int b, int c, int input_imgsize){ 
-    cimg_library::CImg<float> imageOut(input_imgsize,input_imgsize,1,3,0);
+    cimg_library::CImg<double> imageOut(input_imgsize,input_imgsize,1,3,0);
     cimg_library::CImgDisplay disp(512,512,"display");
     cimg_forXYC(imageOut, x, y, c){
         imageOut(x,y,c) = output[b](c,x,y);

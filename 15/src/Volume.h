@@ -5,13 +5,13 @@
 
 struct Volume{
 	Volume()= default;
-	Volume(int D, int W) : d(D), w(W), arr(new float[d*w*w]()){} 	// do float or float?
+	Volume(int D, int W) : d(D), w(W), arr(new double[d*w*w]()){} 	// do double or double?
 
-	inline float& operator ()(int i, int j, int k) {
+	inline double& operator ()(int i, int j, int k) {
 		assert(i<d && j<w && k<w);
 		return arr[i*w*w + j*w + k];
 	}
-	inline float operator ()(int i, int j, int k) const {
+	inline double operator ()(int i, int j, int k) const {
 		assert(i<d && j<w && k<w);
 		return arr[i*w*w + j*w + k];
 	}
@@ -20,7 +20,7 @@ struct Volume{
 	int w; // width and height
 	
 private:
-	std::unique_ptr<float[]> arr;	
+	std::unique_ptr<double[]> arr;	
 };
 
 #endif

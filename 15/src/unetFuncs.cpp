@@ -2,7 +2,7 @@
 
 int batchsize;
 int input_imgsize;
-float learning_rate;
+double learning_rate;
 bool debug = false;
 
 void relu(ArrOfVols &input){
@@ -49,7 +49,7 @@ void conv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output, bo
 			for(int i = 0; i < num_of_kernels; ++i){	// zero out old output before adding
 				for(int x = 0; x < imgsize-2; ++x){
 					for(int y = 0; y < imgsize-2; ++y){
-						float tmp = 0;
+						double tmp = 0;
 						for(int j = 0; j < depth_of_kernels; ++j){							
 							for(int n = 0; n < width_of_kernels; ++n){
 								for(int m = 0; m < width_of_kernels; ++m){
@@ -76,7 +76,7 @@ void fullconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output
 		for(int i = 0; i < num_of_kernels; ++i){
 			for(int x = 1; x < imgsize-1; ++x){
 				for(int y = 1; y < imgsize-1; ++y){
-					float tmp = 0.0;
+					double tmp = 0.0;
 					for(int j = 0; j < depth_of_kernels; ++j){
 						tmp += input[b](j,x,y) * kernel[i](j,0,0); // i-th kernel applied to j-th input is added to i-th output	
 					}
@@ -190,7 +190,7 @@ void compute_Aoloss(ArrOfVols &Aoloss, ArrOfVols const &Aof_final, ArrOfVols con
 	for (int b=0; b<batchsize; ++b){
 		for(int x = 1; x < Aof_final[0].w-1; ++x){
 			for(int y = 1; y < Aof_final[0].w-1; ++y){
-				float sum = 0.0;
+				double sum = 0.0;
 				for(int i = 0; i < 3; ++i){ // (class indices - 1)
 					sum += exp(Aof_final[b](i,x,y));
 				}
@@ -202,8 +202,8 @@ void compute_Aoloss(ArrOfVols &Aoloss, ArrOfVols const &Aof_final, ArrOfVols con
 
 }
 
-float avg_batch_loss(const ArrOfVols &Aoloss){
-	float sum = 0.0;
+double avg_batch_loss(const ArrOfVols &Aoloss){
+	double sum = 0.0;
 
 	for (int b=0; b<batchsize; ++b){
 		for(int x = 0; x < input_imgsize; ++x){
@@ -215,7 +215,7 @@ float avg_batch_loss(const ArrOfVols &Aoloss){
 	return sum/(input_imgsize*input_imgsize*batchsize);
 }
 
-void minmax_batch_loss(const ArrOfVols &Aoloss, float &min, float &max){
+void minmax_batch_loss(const ArrOfVols &Aoloss, double &min, double &max){
 	max = min = Aoloss[0](0,0,0);
 
 	for (int b=0; b<batchsize; ++b){
@@ -246,7 +246,7 @@ void compute_Aok_gradient(ArrOfVols const &input, ArrOfVols const &old_error_ten
         for (int d = 0; d < input[0].d; ++d){ // the depth of each gradient kernel = input[0].d
             for (int w = 0; w < Aok_gradient[0].w; ++w){
                	for (int h = 0; h < Aok_gradient[0].w; ++h){ 
-                    float tmp = 0;
+                    double tmp = 0;
                     for (int b = 0; b < batchsize; ++b){
 	                    for (int x = 1; x < old_error_tensor[0].w-1; ++x){
 	                        for (int y = 1; y < old_error_tensor[0].w-1; ++y){
@@ -266,10 +266,10 @@ void compute_Aok_gradient(ArrOfVols const &input, ArrOfVols const &old_error_ten
 void compute_Aok_uc_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient){
     for (int n = 0; n < old_error_tensor[0].d; ++n){ // the number of kernels
         for (int d = 0; d < input[0].d; ++d){ // the depth of each kernel = input[0].d
-            float tmp1 = 0;
-            float tmp2 = 0;
-            float tmp3 = 0;
-            float tmp4 = 0;
+            double tmp1 = 0;
+            double tmp2 = 0;
+            double tmp3 = 0;
+            double tmp4 = 0;
             for (int b = 0; b < batchsize; ++b){
 	            #pragma omp parallel for
                 for (int x = 1; x < input[0].w-1; x+=2){
@@ -312,7 +312,7 @@ void compute_Aoe_final(ArrOfVols const &Aof_final, ArrOfVols &Aoe_final, const A
         #pragma omp parallel for
     	for (int x = 1; x < Aof_final[0].w-1; ++x){
         	for (int y = 1; y < Aof_final[0].w-1; ++y){
-                float sum = 0;
+                double sum = 0;
                 for (int c = 0; c < Aof_final[0].d; ++c){
                     sum += exp(Aof_final[b](c,x,y));
                 }
@@ -332,22 +332,22 @@ void compute_Aoe_final(ArrOfVols const &Aof_final, ArrOfVols &Aoe_final, const A
 
 void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs){ // update all kernels from their gradient
 	std::cout<<"update_all_Aok"<< std::endl;
-	float beta1 = 0.9;
-	float beta2 = 0.999;
-	float alpha = 0.001;
-	float epsilon = 1e-8;
+	double beta1 = 0.9;
+	double beta2 = 0.999;
+	double alpha = 0.001;
+	double epsilon = 1e-8;
 	static int timestep=1;
 
 	#pragma omp parallel for
 	for (int k=0; k<num_of_convstructs; ++k){
-		float before;
-		float after;
+		double before;
+		double after;
 		if(debug) before=kernel_avg(conv_struct[k].Aok, conv_struct[k].out);
 		for (int i=0; i<conv_struct[k].out; ++i){	//num of kernels
 			for (int d=0; d<conv_struct[k].in; ++d){		// depth of kernels
 				for (int x=0; x<conv_struct[k].kernel_size; ++x){
 					for (int y=0; y<conv_struct[k].kernel_size; ++y){
-						float grad = conv_struct[k].Aok_gradient[i](d,x,y);
+						double grad = conv_struct[k].Aok_gradient[i](d,x,y);
 						// SGD =================
 						// if (grad > 1){ grad = 1.0;}
 						// else if (grad < -1){ grad = -1.0;}
@@ -357,8 +357,8 @@ void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs){ // update 
 						// Adam ======================
 						conv_struct[k].Aom_adam[i](d,x,y) = beta1*conv_struct[k].Aom_adam[i](d,x,y) + (1-beta1)*grad;
 						conv_struct[k].Aov_adam[i](d,x,y) = beta2*conv_struct[k].Aov_adam[i](d,x,y) + (1-beta2)*grad*grad;
-						float m_hat = conv_struct[k].Aom_adam[i](d,x,y) / (1-pow(beta1, timestep));
-						float v_hat = conv_struct[k].Aov_adam[i](d,x,y) / (1-pow(beta2, timestep));
+						double m_hat = conv_struct[k].Aom_adam[i](d,x,y) / (1-pow(beta1, timestep));
+						double v_hat = conv_struct[k].Aov_adam[i](d,x,y) / (1-pow(beta2, timestep));
 						conv_struct[k].Aok[i](d,x,y) = conv_struct[k].Aok[i](d,x,y) - alpha*m_hat/(sqrt(v_hat)+epsilon);
 						// ======================
 					}
@@ -526,7 +526,7 @@ void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap){ // segmap
 	}
 }
 
-void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, float value){ 	// for debug
+void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, double value){ 	// for debug
 	const int range_from  = -1;
     const int range_to    = 1;
     std::random_device                  rand_dev;
@@ -564,8 +564,8 @@ void print_arr(const ArrOfVols &arr, int index, int depth, int *range_x, int *ra
 	outfile.close();
 }
 
-float vol_avg(const ArrOfVols &arr){		// for debug
-	float avg;
+double vol_avg(const ArrOfVols &arr){		// for debug
+	double avg;
     for (int b = 0; b < batchsize; ++b){
     	for (int i=0; i<arr[0].d; ++i){
 	    	for (int x = 0; x < arr[0].w; ++x){
@@ -578,8 +578,8 @@ float vol_avg(const ArrOfVols &arr){		// for debug
     return avg/(batchsize*(arr[0].w)*(arr[0].w)*(arr[0].d));
 }
 
-float kernel_avg(const ArrOfVols &arr, int num_of_kernels){		// for debug
-	float avg;
+double kernel_avg(const ArrOfVols &arr, int num_of_kernels){		// for debug
+	double avg;
     for (int n = 0; n < num_of_kernels; ++n){
     	for (int i=0; i<arr[0].d; ++i){
 	    	for (int x = 0; x < arr[0].w; ++x){
