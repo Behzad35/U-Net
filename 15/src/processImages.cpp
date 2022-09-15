@@ -19,7 +19,7 @@ void ReadImages(ConvStruct::ArrOfVols &output, int batchNr, int batchSize, int i
             for(int j = 0; j <input_imgsize; ++j){
                 for(int c=0; c<3; ++c) // R=0, G=1, B=2
                  
-                output[b](c,i+1,j+1)  = *imageIn.data(i,j,0,c)/255; // read image into interior of output 
+                output[b](c,input_imgsize-j,i+1)  = *imageIn.data(i,j,0,c)/255; // read image into interior of output 
             }
         }
         // double test=0.0;
