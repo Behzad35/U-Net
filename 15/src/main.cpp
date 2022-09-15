@@ -10,7 +10,7 @@ int main(int argc, char *argv[]){
     input_imgsize = std::stoi(argv[1]);      // should be 512
     batchsize  = std::stoi(argv[2]);         // should be 8
     int num_of_batches = std::stoi(argv[3]); // should be 128/batchsize
-    int epochs = 1000;      
+    int epochs = 10000;      
     int num_of_layers = 5;
     int channel_size = 2;
     bool write_segmap = false;
@@ -42,11 +42,10 @@ int main(int argc, char *argv[]){
             std::cout<< "{{ batchNr = " << batchNr << " }}"<< std::endl;
             std::cout<<"---------------------------------------------------------------\n"<< std::endl;
 
-            // ReadImages(layers[0][0].Aof, batchNr, batchsize, input_imgsize);
-            // ReadAnnot(Ao_annots, batchNr, batchsize, input_imgsize);
-
-            read_img_text(layers[0][0].Aof, batchNr);
-            read_annot_text(Ao_annots, batchNr);
+            ReadImages(layers[0][0].Aof, batchNr, batchsize, input_imgsize);
+            ReadAnnot(Ao_annots, batchNr, batchsize, input_imgsize);
+            // read_img_text(layers[0][0].Aof, batchNr);
+            // read_annot_text(Ao_annots, batchNr);
 
             ////////////////////////////////////////////////////////// for debug /////////////////////////////////////
         
@@ -77,10 +76,11 @@ int main(int argc, char *argv[]){
         
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            displayImage(layers[0][6].Aof,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
+            // displayImage(layers[0][0].Aof,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
             
 
             forward_pass(layers, num_of_layers);
+            displayImage(layers[0][6].Aof,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
             if(write_segmap) compute_segmap(layers[0][6].Aof, Ao_segmap);
             compute_Aoloss(Aoloss, layers[0][6].Aof, Ao_annots); // compute loss from annots
             loss_sum += avg_batch_loss(Aoloss);
@@ -90,6 +90,7 @@ int main(int argc, char *argv[]){
             backward_pass(layers, num_of_layers, Ao_annots);
             create_all_Aok_gradient(layers, num_of_layers);
             update_all_Aok(conv_struct, num_of_convstructs); // update all kernels from thier gradients
+            std::cout<< "loss: " << avg_batch_loss(Aoloss) << std::endl;
             std::cout<< "{{{{{{{{{{{ batch ("<< batchNr<< ") avg_loss = "<< loss_sum<< " }}}}}}}}}}}" <<std::endl;
             std::cout<< "min = "<< min<< " max = "<< max<<std::endl;
             

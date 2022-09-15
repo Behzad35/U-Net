@@ -67,7 +67,7 @@ void displayImage(ConvStruct::ArrOfVols &output, int b, int c, int input_imgsize
         imageOut(x,y,c) = output[b](c,x,y);
     }
     imageOut.display(disp);
-    disp.wait(500);
+    disp.wait(350);
     disp.close();
 }
 

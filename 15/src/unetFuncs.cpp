@@ -5,6 +5,21 @@ int input_imgsize;
 double learning_rate;
 bool debug = false;
 
+
+void reluBackwards(ArrOfVols &image, ArrOfVols &error){
+	int num_of_features = image[0].d;
+	int imgsize = image[0].w; // includes padding (doesnt matter but just in case)
+	for (int b=0; b<batchsize; ++b){
+	    #pragma omp parallel for
+		for(int i = 0; i < num_of_features; ++i){
+			for(int x = 1; x < imgsize-1; ++x){
+				for(int y = 1; y < imgsize-1; ++y){
+					if(image[b](i,x,y) <= 0) error[b](i,x,y) = 0;
+				}
+			}
+		}
+	}
+}
 void relu(ArrOfVols &input){
 	int num_of_features = input[0].d;
 	int imgsize = input[0].w; // includes padding (doesnt matter but just in case)
@@ -334,8 +349,8 @@ void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs){ // update 
 	std::cout<<"update_all_Aok"<< std::endl;
 	double beta1 = 0.9;
 	double beta2 = 0.999;
-	double alpha = 0.001;
-	double epsilon = 1e-8;
+	double alpha = 0.005;
+	double epsilon = 1e-6; //1e-8
 	static int timestep=1;
 
 	#pragma omp parallel for
@@ -421,19 +436,19 @@ void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_a
 	std::cout<<"================================== Backward Pass ========================================"<< std::endl;
 	std::cout<<"First error tensor"<<std::endl;
 	compute_Aoe_final(layers[0][6].Aof, layers[0][6].Aoe, Ao_annots); // find gradient of loss wrt Aof_final to get Aoe_final
-    
 	std::cout<<"First back conv"<<std::endl;
 	fullconv(layers[0][6].Aoe, layers[0][5].Aok_back, layers[0][5].Aoe);
-
+    reluBackwards(layers[0][5].Aof, layers[0][5].Aoe);
 	for (int i=0; i<=num_of_layers-2; ++i){
 		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
 		std::cout<<"back conv 4"<<std::endl;
 		conv(layers[i][5].Aoe, layers[i][4].Aok_back, layers[i][4].Aoe);
-
+        reluBackwards(layers[i][4].Aof, layers[i][4].Aoe);
 		std::cout<<"back conv 3"<<std::endl;
 		conv(layers[i][4].Aoe, layers[i][3].Aok_back, layers[i][3].Aoe);
-		conv(layers[i][4].Aoe, layers[i][2].Aok_back, layers[i][2].Aoe);
-
+        reluBackwards(layers[i][3].Aof, layers[i][3].Aoe);
+		conv(layers[i][3].Aoe, layers[i][2].Aok_back, layers[i][2].Aoe);
+        reluBackwards(layers[i][2].Aof, layers[i][2].Aoe);
 		if(i==num_of_layers-2){		
 			std::cout<<"back upconv to layer "<< i+1 <<std::endl;
 			upconv_backward(layers[i][3].Aoe, layers[i+1][2].Aok_back, layers[i+1][2].Aoe);
@@ -447,10 +462,10 @@ void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_a
 	std::cout<<"---------- Layer ("<< num_of_layers-1 <<") ----------"<<std::endl;
 	std::cout<<"back conv 2"<<std::endl;
 	conv(layers[num_of_layers-1][2].Aoe, layers[num_of_layers-1][1].Aok_back, layers[num_of_layers-1][1].Aoe);
-
+    reluBackwards(layers[num_of_layers-1][1].Aof, layers[num_of_layers-1][1].Aoe);
 	std::cout<<"back conv 1"<<std::endl;
 	conv(layers[num_of_layers-1][1].Aoe, layers[num_of_layers-1][0].Aok_back, layers[num_of_layers-1][0].Aoe);
-
+    reluBackwards(layers[num_of_layers-1][0].Aof, layers[num_of_layers-1][0].Aoe);
 	for (int i=num_of_layers-2; i>=0; --i){
 		std::cout<<"avgpool back to layer "<< i <<std::endl;
 		avgpool_backward(layers[i+1][0].Aoe, layers[i][2].Aoe); // adds error to the error found from concat (doesn't overwrite)
@@ -458,9 +473,11 @@ void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_a
 		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
 		std::cout<<"back conv 2"<<std::endl;
 		conv(layers[i][2].Aoe, layers[i][1].Aok_back, layers[i][1].Aoe);
+        reluBackwards(layers[i][1].Aof, layers[i][1].Aoe);
 
 		std::cout<<"back conv 1"<<std::endl;
 		conv(layers[i][1].Aoe, layers[i][0].Aok_back, layers[i][0].Aoe);
+        reluBackwards(layers[i][0].Aof, layers[i][0].Aoe);
 	}
 
 	std::cout<< "\nBackward pass done.\n"<<std::endl;

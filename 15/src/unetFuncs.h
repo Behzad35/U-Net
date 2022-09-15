@@ -16,6 +16,7 @@ extern double learning_rate;
 
 using ArrOfVols = ConvStruct::ArrOfVols;
 
+void reluBackwards(ArrOfVols &image, ArrOfVols &error);
 void relu(ArrOfVols &input);
 void conv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output, bool dont_wipe_before_adding=false);
 void fullconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output);
