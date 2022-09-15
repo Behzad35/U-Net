@@ -8,7 +8,7 @@ npy_data<Scalar> test_load(const char * path) {
 }
 
 void readKernel(ConvStruct::ArrOfVols const &target, const char * path, int dim[]){
-    auto d = test_load<float>(path);
+    auto d = test_load<double>(path);
     int index=0;
     //std::copy(d.data.begin(), d.data.end(), target);
     for(int i=0; i < dim[0]; i++){
@@ -24,7 +24,7 @@ void readKernel(ConvStruct::ArrOfVols const &target, const char * path, int dim[
 }
 
 void readTwoKernel(ConvStruct::ArrOfVols const &target1, ConvStruct::ArrOfVols const &target2, const char * path, int dim[]){
-    auto d = test_load<float>(path);
+    auto d = test_load<double>(path);
     int index=0;
     int d2 = dim[1] / 2;
     int j2 = 0;
