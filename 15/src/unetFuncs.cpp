@@ -152,10 +152,10 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 			for (int x=1; x<imgsize-1; ++x){
 				for (int y=1; y<imgsize-1; ++y){
 					for (int j=0; j<depth_of_kernels; ++j){
-						output[b](i,2*x-1,2*y-1)	= kernel[i](j,0,0) * input[b](j,x,y);
-						output[b](i,2*x,2*y-1)		= kernel[i](j,1,0) * input[b](j,x,y);
-						output[b](i,2*x-1,2*y)		= kernel[i](j,0,1) * input[b](j,x,y);
-						output[b](i,2*x,2*y)		= kernel[i](j,1,1) * input[b](j,x,y);
+						output[b](i,2*x-1,2*y-1)	+= kernel[i](j,0,0) * input[b](j,x,y);
+						output[b](i,2*x,2*y-1)		+= kernel[i](j,1,0) * input[b](j,x,y);
+						output[b](i,2*x-1,2*y)		+= kernel[i](j,0,1) * input[b](j,x,y);
+						output[b](i,2*x,2*y)		+= kernel[i](j,1,1) * input[b](j,x,y);
 					}
 				}
 			}
