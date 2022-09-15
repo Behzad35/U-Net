@@ -48,7 +48,7 @@ void ReadAnnot(ConvStruct::ArrOfVols &output, int batchNr, int batchSize, int in
         
         for(int i = 0; i<input_imgsize; ++i){
             for(int j = 0; j < input_imgsize; ++j){
-                output[b](0,i,j)  = *imageIn.data(i,j,0,0); // Annots are not padded, also only read the red channel
+                output[b](0,input_imgsize-j-1,i)  = *imageIn.data(i,j,0,0); // Annots are not padded, also only read the red channel
             }
         }
 
@@ -67,7 +67,7 @@ void displayImage(ConvStruct::ArrOfVols &output, int b, int c, int input_imgsize
         imageOut(x,y,c) = output[b](c,x,y);
     }
     imageOut.display(disp);
-    disp.wait(350);
+    disp.wait(1000);
     disp.close();
 }
 

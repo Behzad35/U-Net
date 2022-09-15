@@ -350,7 +350,7 @@ void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs){ // update 
 	double beta1 = 0.9;
 	double beta2 = 0.999;
 	double alpha = 0.005;
-	double epsilon = 1e-6; //1e-8
+	double epsilon = 1e-8; //1e-8
 	static int timestep=1;
 
 	#pragma omp parallel for
@@ -408,6 +408,7 @@ void forward_pass(ConvStruct **layers, int num_of_layers){
 	}
 		std::cout<<"upconv to layer "<< num_of_layers-2 <<std::endl;
 		upconv(layers[num_of_layers-1][2].Aof, layers[num_of_layers-1][2].Aok, layers[num_of_layers-2][3].Aof);
+		// relu(layers[num_of_layers-2][3].Aof);
 
 	for (int i=num_of_layers-2; i>=0; --i){
 		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
@@ -423,6 +424,7 @@ void forward_pass(ConvStruct **layers, int num_of_layers){
 		if (i==0){break;}
 		std::cout<<"upconv to layer "<< i <<std::endl;
 		upconv(layers[i][5].Aof, layers[i][5].Aok, layers[i-1][3].Aof);
+		// relu(layers[i-1][3].Aof);
 	}
 
 	std::cout<<"fullconv"<<std::endl;
@@ -438,7 +440,7 @@ void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_a
 	compute_Aoe_final(layers[0][6].Aof, layers[0][6].Aoe, Ao_annots); // find gradient of loss wrt Aof_final to get Aoe_final
 	std::cout<<"First back conv"<<std::endl;
 	fullconv(layers[0][6].Aoe, layers[0][5].Aok_back, layers[0][5].Aoe);
-    reluBackwards(layers[0][5].Aof, layers[0][5].Aoe);
+    reluBackwards(layers[0][5].Aoe, layers[0][5].Aoe);
 	for (int i=0; i<=num_of_layers-2; ++i){
 		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
 		std::cout<<"back conv 4"<<std::endl;
@@ -527,16 +529,16 @@ void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap){ // segmap
 		for (int x=1; x<Aof_final[0].w-1; ++x){
 			for (int y=1; y<Aof_final[0].w-1; ++y){
 				if(Aof_final[b](0,x,y)>Aof_final[b](1,x,y) && Aof_final[b](0,x,y)>Aof_final[b](2,x,y)){
-					Ao_segmap[b](0,x-1,y-1)=1;
+					Ao_segmap[b](0,x-1,y-1)=80;
 				}
 				else if(Aof_final[b](1,x,y)>Aof_final[b](0,x,y) && Aof_final[b](1,x,y)>Aof_final[b](2,x,y)){
-					Ao_segmap[b](0,x-1,y-1)=2;
+					Ao_segmap[b](0,x-1,y-1)=160;
 				}
 				else if(Aof_final[b](2,x,y)>Aof_final[b](0,x,y) && Aof_final[b](2,x,y)>Aof_final[b](1,x,y)){
-					Ao_segmap[b](0,x-1,y-1)=3;
+					Ao_segmap[b](0,x-1,y-1)=240;
 				}
 				else {
-					Ao_segmap[b](0,x-1,y-1)=-1;
+					Ao_segmap[b](0,x-1,y-1)=0;
 				}
 			}
 		}
