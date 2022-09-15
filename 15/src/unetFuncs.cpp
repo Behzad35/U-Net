@@ -440,7 +440,7 @@ void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_a
 	compute_Aoe_final(layers[0][6].Aof, layers[0][6].Aoe, Ao_annots); // find gradient of loss wrt Aof_final to get Aoe_final
 	std::cout<<"First back conv"<<std::endl;
 	fullconv(layers[0][6].Aoe, layers[0][5].Aok_back, layers[0][5].Aoe);
-    reluBackwards(layers[0][5].Aoe, layers[0][5].Aoe);
+    reluBackwards(layers[0][5].Aof, layers[0][5].Aoe);
 	for (int i=0; i<=num_of_layers-2; ++i){
 		std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
 		std::cout<<"back conv 4"<<std::endl;

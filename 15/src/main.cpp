@@ -81,9 +81,8 @@ int main(int argc, char *argv[]){
 
             forward_pass(layers, num_of_layers);
             // displayImage(layers[0][6].Aof,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
-            // if(write_segmap) 
-            compute_segmap(layers[0][6].Aof, Ao_segmap);
-            displayImage(Ao_segmap,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
+            if(write_segmap) compute_segmap(layers[0][6].Aof, Ao_segmap);
+            // displayImage(Ao_segmap,0,0, input_imgsize); // first layer, first ConvStruct, first img in batch, first channel
             compute_Aoloss(Aoloss, layers[0][6].Aof, Ao_annots); // compute loss from annots
             loss_sum += avg_batch_loss(Aoloss);
             double min, max;
