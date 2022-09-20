@@ -151,12 +151,7 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 		for (int i=0; i<num_of_kernels; ++i){
 			for (int x=1; x<output[0]-1; ++x){
 				for (int y=1; y<output[0]-1; ++y){
-					for (int j=0; j<depth_of_kernels; ++j){
-						output[b](i,x,y)		= 0.0;
-						output[b](i,x,y)		= 0.0;
-						output[b](i,x,y)		= 0.0;
-						output[b](i,x,y)		= 0.0;
-					} 
+					output[b](i,x,y)		= 0.0;
 				}
 			}
 		}
