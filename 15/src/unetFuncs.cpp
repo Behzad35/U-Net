@@ -145,7 +145,23 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 	int num_of_kernels = output[0].d; //depth of output or number of kernels should be half of depth of input
 	int depth_of_kernels = input[0].d;
 	int imgsize = input[0].w; // includes padding
-
+	
+	for (int b=0; b<batchsize; ++b){
+	    #pragma omp parallel for
+		for (int i=0; i<num_of_kernels; ++i){
+			for (int x=1; x<output[0]-1; ++x){
+				for (int y=1; y<output[0]-1; ++y){
+					for (int j=0; j<depth_of_kernels; ++j){
+						output[b](i,x,y)		= 0.0;
+						output[b](i,x,y)		= 0.0;
+						output[b](i,x,y)		= 0.0;
+						output[b](i,x,y)		= 0.0;
+					} 
+				}
+			}
+		}
+	}
+	
 	for (int b=0; b<batchsize; ++b){
 	    #pragma omp parallel for
 		for (int i=0; i<num_of_kernels; ++i){
@@ -165,12 +181,27 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 }
 
 void upconv_backward(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
+	
+
+	for(int i=0; i<output[0].d; ++i){
+        for(int x=1; x<output[0].w-1; ++x){
+            for(int y=1; y<output[0].w-1; ++y){
+                for(int b=0; b<batchsize; ++b){
+                    for(int j=0; j<input[0].d; ++j){
+                        output[b](i,x,y) = 0.0;
+                    }
+                }
+            }
+        }
+    }
+	
+	
     for(int i=0; i<output[0].d; ++i){
         for(int x=1; x<output[0].w-1; ++x){
             for(int y=1; y<output[0].w-1; ++y){
                 for(int b=0; b<batchsize; ++b){
                     for(int j=0; j<input[0].d; ++j){
-                        output[b](i,x,y) = kernel[i](j,0,0) * input[b](j, 2*x-1, 2*y-1) +
+                        output[b](i,x,y) += kernel[i](j,0,0) * input[b](j, 2*x-1, 2*y-1) +
                                            kernel[i](j,1,0) * input[b](j, 2*x, 2*y-1) +
                                            kernel[i](j,0,1) * input[b](j, 2*x-1, 2*y) +
                                            kernel[i](j,1,1) * input[b](j, 2*x, 2*y);
