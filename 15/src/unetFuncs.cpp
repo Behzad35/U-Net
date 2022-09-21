@@ -376,7 +376,7 @@ void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs){ // update 
 	if(verbose) std::cout<<"update_all_Aok"<< std::endl;
 	double beta1 = 0.9;
 	double beta2 = 0.999;
-	double alpha = 0.005;
+	double alpha = learning_rate;
 	double epsilon = 1e-8; //1e-8
 	static int timestep=1;
 
