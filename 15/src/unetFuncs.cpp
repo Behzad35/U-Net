@@ -476,7 +476,7 @@ void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_a
 		if(verbose) std::cout<<"back conv 3"<<std::endl;
 		conv(layers[i][4].Aoe, layers[i][3].Aok_back, layers[i][3].Aoe);
         reluBackwards(layers[i][3].Aof, layers[i][3].Aoe);
-		conv(layers[i][3].Aoe, layers[i][2].Aok_back, layers[i][2].Aoe);
+		conv(layers[i][4].Aoe, layers[i][2].Aok_back, layers[i][2].Aoe);
         reluBackwards(layers[i][2].Aof, layers[i][2].Aoe);
 		if(i==num_of_layers-2){		
 			if(verbose) std::cout<<"back upconv to layer "<< i+1 <<std::endl;
