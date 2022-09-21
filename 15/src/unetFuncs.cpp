@@ -150,8 +150,8 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 	for (int b=0; b<batchsize; ++b){
 	    #pragma omp parallel for
 		for (int i=0; i<num_of_kernels; ++i){
-			for (int x=1; x<output[0]-1; ++x){
-				for (int y=1; y<output[0]-1; ++y){
+			for (int x=1; x<output[0].w-1; ++x){
+				for (int y=1; y<output[0].w-1; ++y){
 					output[b](i,x,y)		= 0.0;
 				}
 			}
