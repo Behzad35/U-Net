@@ -658,9 +658,9 @@ void read_img_text(ArrOfVols &arr, int batchNr){	// read imges from .csv
 			std::istringstream line1(l1);
 			std::istringstream line2(l2);
 			for (int x=0; x<input_imgsize; ++x){
-				line0 >> arr[b](0,x,y);
-				line1 >> arr[b](1,x,y);
-				line2 >> arr[b](2,x,y);
+				line0 >> arr[b](0,input_imgsize-y,x+1);
+				line1 >> arr[b](1,input_imgsize-y,x+1);
+				line2 >> arr[b](2,input_imgsize-y,x+1);
 			}
 		}
 	}
@@ -679,7 +679,7 @@ void read_annot_text(ArrOfVols &arr, int batchNr){
 			getline(ch0, l0);
 			std::istringstream line0(l0);
 			for (int x=0; x<input_imgsize; ++x){
-				line0 >> arr[b](0,x,y);
+				line0 >> arr[b](0,input_imgsize-y,x+1);
 			}
 		}
 	}
