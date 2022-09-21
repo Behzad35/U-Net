@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
     // read_backup_kernels(conv_struct, num_of_convstructs);
     // init_kernel_guess(conv_struct, num_of_convstructs, 0.001); 
 
-    for (int i=10; i<epochs; ++i){ 
+    for (int i=0; i<epochs; ++i){ 
         std::cout<<"\n========================================================="<< std::endl;
         std::cout<<"{{{{{{{{{{{{{{{{{{{{{{ epoch ("<< i << ") }}}}}}}}}}}}}}}}}}}}}}" << std::endl;
         std::cout<<"=========================================================\n"<< std::endl;
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]){
             
         }
         std::cout<<"-------------------------\n{{{{{{{{{{{{{{ Loss = "<< loss_sum/num_of_batches <<" }}}}}}}}}}}}}}\n-------------------------"<< std::endl;
-        if(i>0 && i%4==0) backup_kernels(conv_struct, num_of_convstructs);
+        // if(i>0 && i%4==0) backup_kernels(conv_struct, num_of_convstructs);
         if(write_segmap){
             int range_x[2]={0, Ao_segmap[0].w};
             int range_y[2]={0, Ao_segmap[0].w};
