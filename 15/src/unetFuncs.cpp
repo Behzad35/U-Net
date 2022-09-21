@@ -680,7 +680,7 @@ void read_annot_text(ArrOfVols &arr, int batchNr){
 			getline(ch0, l0);
 			std::istringstream line0(l0);
 			for (int x=0; x<input_imgsize; ++x){
-				line0 >> arr[b](0,input_imgsize-y,x+1);
+				line0 >> arr[b](0,input_imgsize-y-1,x);
 			}
 		}
 	}
