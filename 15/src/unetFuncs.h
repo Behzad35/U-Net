@@ -34,8 +34,8 @@ void compute_Aok_uc_gradient(ArrOfVols const &input, ArrOfVols const &old_error_
 void create_all_Aok_gradient(ConvStruct **layers, int num_of_layers);
 void compute_Aoe_final(ArrOfVols const &Aof_final, ArrOfVols &Aoe_final, const ArrOfVols &Ao_annots);
 void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs);
-void forward_pass(ConvStruct **layers, int num_of_layers);
-void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_annots);
+void forward_pass(int i, ConvStruct **layers, int num_of_layers);
+void backward_pass(int i, ConvStruct **layers, int num_of_layers);
 void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_of_layers, int channel_size);
 void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap);
 void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, double value);

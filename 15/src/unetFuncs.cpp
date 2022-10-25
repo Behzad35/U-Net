@@ -414,102 +414,67 @@ void update_all_Aok(ConvStruct *conv_struct, int num_of_convstructs){ // update 
 	timestep++;
 }
 
-void forward_pass(ConvStruct **layers, int num_of_layers){
+void forward_pass(int i, ConvStruct **layers, int num_of_layers){
+	conv(layers[i][0].Aof, layers[i][0].Aok, layers[i][1].Aof);
+	relu(layers[i][1].Aof);
 
-	if(verbose) std::cout<<"================================== Forwared Pass ========================================"<< std::endl;
+	conv(layers[i][1].Aof, layers[i][1].Aok, layers[i][2].Aof);
+	relu(layers[i][2].Aof);
 
-	for (int i=0; i<num_of_layers; ++i){
-		if(verbose) std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-		if(verbose) std::cout<<"conv 1"<<std::endl;
-		conv(layers[i][0].Aof, layers[i][0].Aok, layers[i][1].Aof);
-		relu(layers[i][1].Aof);
-
-		if(verbose) std::cout<<"conv 2"<<std::endl;
-		conv(layers[i][1].Aof, layers[i][1].Aok, layers[i][2].Aof);
-		relu(layers[i][2].Aof);
-
-		if (i==num_of_layers-1){break;}
-		if(verbose) std::cout<<"avgpool to layer "<< i+1 <<std::endl;
-		avgpool(layers[i][2].Aof, layers[i+1][0].Aof);
-
+	if(i==num_of_layers-1){
+		upconv(layers[i][2].Aof, layers[i][2].Aok, layers[i-1][3].Aof);
+		return;
 	}
-		if(verbose) std::cout<<"upconv to layer "<< num_of_layers-2 <<std::endl;
-		upconv(layers[num_of_layers-1][2].Aof, layers[num_of_layers-1][2].Aok, layers[num_of_layers-2][3].Aof);
-		// relu(layers[num_of_layers-2][3].Aof);
+	avgpool(layers[i][2].Aof, layers[i+1][0].Aof);
+	forward_pass(i+1, layers, num_of_layers);
 
-	for (int i=num_of_layers-2; i>=0; --i){
-		if(verbose) std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-		if(verbose) std::cout<<"conv 3"<<std::endl;
-		conv(layers[i][3].Aof, layers[i][3].Aok, layers[i][4].Aof);
-		conv(layers[i][2].Aof, layers[i][2].Aok, layers[i][4].Aof, true); // 'true' means just add results, dont wipe previous values
-		relu(layers[i][4].Aof);
+	conv(layers[i][3].Aof, layers[i][3].Aok, layers[i][4].Aof);
+	conv(layers[i][2].Aof, layers[i][2].Aok, layers[i][4].Aof, true); // 'true' means just add results, dont wipe previous values
+	relu(layers[i][4].Aof);
 
-		if(verbose) std::cout<<"conv 4"<<std::endl;
-		conv(layers[i][4].Aof, layers[i][4].Aok, layers[i][5].Aof);
-		relu(layers[i][5].Aof);
+	conv(layers[i][4].Aof, layers[i][4].Aok, layers[i][5].Aof);
+	relu(layers[i][5].Aof);
 
-		if (i==0){break;}
-		if(verbose) std::cout<<"upconv to layer "<< i <<std::endl;
+	if(i==0){
+		fullconv(layers[0][5].Aof, layers[0][5].Aok, layers[0][6].Aof); // no relu
+	}
+	else{
 		upconv(layers[i][5].Aof, layers[i][5].Aok, layers[i-1][3].Aof);
-		// relu(layers[i-1][3].Aof);
 	}
 
-	if(verbose) std::cout<<"fullconv"<<std::endl;
-	fullconv(layers[0][5].Aof, layers[0][5].Aok, layers[0][6].Aof); // no relu
-
-	if(verbose) std::cout<< "\nForward pass done.\n"<<std::endl;
 }
 
-void backward_pass(ConvStruct **layers, int num_of_layers, const ArrOfVols &Ao_annots){
-
-	if(verbose) std::cout<<"================================== Backward Pass ========================================"<< std::endl;
-	if(verbose) std::cout<<"First error tensor"<<std::endl;
-	compute_Aoe_final(layers[0][6].Aof, layers[0][6].Aoe, Ao_annots); // find gradient of loss wrt Aof_final to get Aoe_final
-	if(verbose) std::cout<<"First back conv"<<std::endl;
-	fullconv(layers[0][6].Aoe, layers[0][5].Aok_back, layers[0][5].Aoe);
-    reluBackwards(layers[0][5].Aof, layers[0][5].Aoe);
-	for (int i=0; i<=num_of_layers-2; ++i){
-		if(verbose) std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-		if(verbose) std::cout<<"back conv 4"<<std::endl;
-		conv(layers[i][5].Aoe, layers[i][4].Aok_back, layers[i][4].Aoe);
-        reluBackwards(layers[i][4].Aof, layers[i][4].Aoe);
-		if(verbose) std::cout<<"back conv 3"<<std::endl;
-		conv(layers[i][4].Aoe, layers[i][3].Aok_back, layers[i][3].Aoe);
-        reluBackwards(layers[i][3].Aof, layers[i][3].Aoe);
-		conv(layers[i][4].Aoe, layers[i][2].Aok_back, layers[i][2].Aoe);
-        reluBackwards(layers[i][2].Aof, layers[i][2].Aoe);
-		if(i==num_of_layers-2){		
-			if(verbose) std::cout<<"back upconv to layer "<< i+1 <<std::endl;
-			upconv_backward(layers[i][3].Aoe, layers[i+1][2].Aok_back, layers[i+1][2].Aoe);
-		}
-		else{
-			if(verbose) std::cout<<"back upconv to layer "<< i+1 <<std::endl;
-			upconv_backward(layers[i][3].Aoe, layers[i+1][5].Aok_back, layers[i+1][5].Aoe); 
-		}
+void backward_pass(int i, ConvStruct **layers, int num_of_layers){
+	if(i==0){
+		fullconv(layers[0][6].Aoe, layers[0][5].Aok_back, layers[0][5].Aoe);
+    	reluBackwards(layers[0][5].Aof, layers[0][5].Aoe);
 	}
+    else if(i==num_of_layers-1){
+    	upconv_backward(layers[i-1][3].Aoe, layers[i][2].Aok_back, layers[i][2].Aoe);
+    	return;
+    }
+    else{
+    	upconv_backward(layers[i-1][3].Aoe, layers[i][5].Aok_back, layers[i][5].Aoe); 
+    }
 
-	if(verbose) std::cout<<"---------- Layer ("<< num_of_layers-1 <<") ----------"<<std::endl;
-	if(verbose) std::cout<<"back conv 2"<<std::endl;
-	conv(layers[num_of_layers-1][2].Aoe, layers[num_of_layers-1][1].Aok_back, layers[num_of_layers-1][1].Aoe);
-    reluBackwards(layers[num_of_layers-1][1].Aof, layers[num_of_layers-1][1].Aoe);
-	if(verbose) std::cout<<"back conv 1"<<std::endl;
-	conv(layers[num_of_layers-1][1].Aoe, layers[num_of_layers-1][0].Aok_back, layers[num_of_layers-1][0].Aoe);
-    reluBackwards(layers[num_of_layers-1][0].Aof, layers[num_of_layers-1][0].Aoe);
-	for (int i=num_of_layers-2; i>=0; --i){
-		if(verbose) std::cout<<"avgpool back to layer "<< i <<std::endl;
-		avgpool_backward(layers[i+1][0].Aoe, layers[i][2].Aoe); // adds error to the error found from concat (doesn't overwrite)
+	conv(layers[i][5].Aoe, layers[i][4].Aok_back, layers[i][4].Aoe);
+    reluBackwards(layers[i][4].Aof, layers[i][4].Aoe);
 
-		if(verbose) std::cout<<"---------- Layer ("<< i <<") ----------"<<std::endl;
-		if(verbose) std::cout<<"back conv 2"<<std::endl;
-		conv(layers[i][2].Aoe, layers[i][1].Aok_back, layers[i][1].Aoe);
-        reluBackwards(layers[i][1].Aof, layers[i][1].Aoe);
+	conv(layers[i][4].Aoe, layers[i][3].Aok_back, layers[i][3].Aoe);
+    reluBackwards(layers[i][3].Aof, layers[i][3].Aoe);
+	conv(layers[i][4].Aoe, layers[i][2].Aok_back, layers[i][2].Aoe);
+    reluBackwards(layers[i][2].Aof, layers[i][2].Aoe);
 
-		if(verbose) std::cout<<"back conv 1"<<std::endl;
-		conv(layers[i][1].Aoe, layers[i][0].Aok_back, layers[i][0].Aoe);
-        reluBackwards(layers[i][0].Aof, layers[i][0].Aoe);
+    backward_pass(i+1, layers, num_of_layers);
+
+	conv(layers[i][2].Aoe, layers[i][1].Aok_back, layers[i][1].Aoe);
+    reluBackwards(layers[i][1].Aof, layers[i][1].Aoe);
+	conv(layers[i][1].Aoe, layers[i][0].Aok_back, layers[i][0].Aoe);
+    reluBackwards(layers[i][0].Aof, layers[i][0].Aoe);
+
+    if(i!=0){
+		avgpool_backward(layers[i][0].Aoe, layers[i-1][2].Aoe); // adds error to the error found from concat (doesn't overwrite)
 	}
-
-	if(verbose) std::cout<< "\nBackward pass done.\n"<<std::endl;
 }
 
 void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_of_layers, int channel_size){
