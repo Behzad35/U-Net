@@ -43,8 +43,8 @@ void conv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output, bo
 
 	if (dont_wipe_before_adding){
 		for (int b=0; b<batchsize; ++b){
-		    #pragma omp parallel for
 			for(int i = 0; i < num_of_kernels; ++i){	// just add to old output
+				#pragma omp parallel for collapse(2)
 				for(int x = 0; x < imgsize-2; ++x){
 					for(int y = 0; y < imgsize-2; ++y){
 						for(int j = 0; j < depth_of_kernels; ++j){							
@@ -61,11 +61,11 @@ void conv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output, bo
 	}
 	else{
 		for (int b=0; b<batchsize; ++b){
-		    #pragma omp parallel for
 			for(int i = 0; i < num_of_kernels; ++i){	// zero out old output before adding
+				#pragma omp parallel for collapse(2)
 				for(int x = 0; x < imgsize-2; ++x){
 					for(int y = 0; y < imgsize-2; ++y){
-						double tmp = 0;
+						double tmp = 0.0;
 						for(int j = 0; j < depth_of_kernels; ++j){							
 							for(int n = 0; n < width_of_kernels; ++n){
 								for(int m = 0; m < width_of_kernels; ++m){
@@ -257,7 +257,7 @@ double avg_batch_loss(const ArrOfVols &Aoloss){
 	return sum/(input_imgsize*input_imgsize*batchsize);
 }
 
-void minmax_batch_loss(const ArrOfVols &Aoloss, double &min, double &max){
+void minmax_batch_loss(const ArrOfVols &Aoloss, double &min, double &max){ // for debug
 	max = min = Aoloss[0](0,0,0);
 
 	for (int b=0; b<batchsize; ++b){
@@ -283,13 +283,14 @@ ArrOfVols create_ArrOfVols(int num_of_arrs, int depth, int width){
 //so for each batch, there will be (batchsize * error tensor depth) gradient kernels. 
 
 void compute_Aok_gradient(ArrOfVols const &input, ArrOfVols const &old_error_tensor, ArrOfVols &Aok_gradient){
-    #pragma omp parallel for
+    
     for (int n = 0; n < old_error_tensor[0].d; ++n){ // the number of gradient kernels for each input = old_error_tensor[0].d
         for (int d = 0; d < input[0].d; ++d){ // the depth of each gradient kernel = input[0].d
             for (int w = 0; w < Aok_gradient[0].w; ++w){
                	for (int h = 0; h < Aok_gradient[0].w; ++h){ 
                     double tmp = 0;
                     for (int b = 0; b < batchsize; ++b){
+                    	#pragma omp parallel for
 	                    for (int x = 1; x < old_error_tensor[0].w-1; ++x){
 	                        for (int y = 1; y < old_error_tensor[0].w-1; ++y){
 	                        	tmp += old_error_tensor[b](n,x,y) * input[b](d,x+w-1,y+h-1); //apply interior of error_tensor to padded input
