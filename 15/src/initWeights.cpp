@@ -110,12 +110,7 @@ void init_weights(ConvStruct ** layers){
     readKernel(layers[4][2].Aok, "./weights/transposed_conv0.weight.npy", dt0);
 }
 
-void init_biases(ConvStruct ** layers){
-//TODO//
-    return;
-}
 
 void init_kernels(ConvStruct ** layers){
    init_weights(layers);
-   //init_biases(layers); 
 }
