@@ -497,8 +497,6 @@ void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_o
         if (layer_index==0) {
             layers[layer_index] = &conv_struct[0];
             layers[layer_index][0] = ConvStruct(3,                 num_of_features,      batchsize, padded_imgsize, 3);
-            // layers[layer_index][1] = ConvStruct(num_of_features,   3,      batchsize, padded_imgsize, 3); //for debug
-            
             layers[layer_index][1] = ConvStruct(num_of_features,   num_of_features,      batchsize, padded_imgsize, 3);
             layers[layer_index][2] = ConvStruct(num_of_features,   num_of_features*2,    batchsize, padded_imgsize, 3);
             layers[layer_index][3] = ConvStruct(num_of_features,   num_of_features*2,    batchsize, padded_imgsize, 3);
