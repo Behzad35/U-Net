@@ -13,6 +13,8 @@
 extern int batchsize;
 extern int input_imgsize;
 extern double learning_rate;
+extern bool verbose;
+extern bool debug;
 
 using ArrOfVols = ConvStruct::ArrOfVols;
 
