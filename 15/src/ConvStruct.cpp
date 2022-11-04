@@ -6,13 +6,13 @@ ConvStruct::ConvStruct(int num_of_inputs, int num_of_outputs, int batchsize, int
 	batchsize(batchsize),
 	padded_imgsize(padded_imgsize),
 	kernel_size(kernel_size),
-	Aof(new Volume[batchsize]),
-	Aoe(new Volume[batchsize]),
-	Aok(new Volume[out]),
-	Aom_adam(new Volume[out]),
-	Aov_adam(new Volume[out]),
-	Aok_gradient(new Volume[out]),
-	Aok_back(new Volume[in])
+	Aof(new Volume[batchsize]),		// array of feature channels
+	Aoe(new Volume[batchsize]),		// array of error tensors
+	Aok(new Volume[out]),			// array of kernels
+	Aom_adam(new Volume[out]),		// for adam optimiser
+	Aov_adam(new Volume[out]),		// for adam optimiser
+	Aok_gradient(new Volume[out]),	// array of kernel gradients 
+	Aok_back(new Volume[in])		// array of backward kernels
 	{
 		for (int i=0; i<batchsize; ++i){
 			Aof[i]=Volume(in, padded_imgsize);

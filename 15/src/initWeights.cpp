@@ -10,7 +10,6 @@ npy_data<Scalar> test_load(const char * path) {
 void readKernel(ConvStruct::ArrOfVols const &target, const char * path, int dim[]){
     auto d = test_load<double>(path);
     int index=0;
-    //std::copy(d.data.begin(), d.data.end(), target);
     for(int i=0; i < dim[0]; i++){
         for(int j=0; j < dim[1]; j++){
             for(int n=0; n < dim[2]; n++){
@@ -28,15 +27,10 @@ void readTwoKernel(ConvStruct::ArrOfVols const &target1, ConvStruct::ArrOfVols c
     int index=0;
     int d2 = dim[1] / 2;
     int j2 = 0;
-    // std::cout << path;
-    // std::cout<<"Dimension ArrOfVols: "<<target1[0].d<< " x " << target1[0].w<<std::endl;
-// int ff=0;
-    //std::copy(d.data.begin(), d.data.end(), target);
     for(int i=0; i < dim[0]; i++){
         for(int j=0; j < dim[1]; j++){
             for(int n=0; n < dim[2]; n++){
                 for(int m=0; m < dim[3]; m++){
-                    // if (d.data[index]>10) {std::cout<<d.data[index]<<std::endl; ff++;}
                     if(j < d2){
                         target1[i](j,n,m) = d.data[index];
                         
@@ -49,7 +43,6 @@ void readTwoKernel(ConvStruct::ArrOfVols const &target1, ConvStruct::ArrOfVols c
             }
         }
     }
-    // std::cout<< "wrong ones "<< ff<< std::endl;
 }
 
 
@@ -65,7 +58,7 @@ void init_weights(ConvStruct ** layers){
     int d6[] = {32,16,3,3};
     int d7[] = {32,32,3,3};
     int d8[] = {64,32,3,3};
-    int d9[] = {32,64,3,3}; // last layer Aok2
+    int d9[] = {32,64,3,3};
     int d10[] = {32,64,3,3};
     int d11[] = {16,32,3,3};
     int d12[] = {16,32,3,3};
@@ -74,7 +67,7 @@ void init_weights(ConvStruct ** layers){
     int d15[] = {4,8,3,3};
     int d16[] = {8,8,3,3};
     int d17[] = {8,8,3,3};
-    int d18[] = {3,8,1,1}; //full conv
+    int d18[] = {3,8,1,1};
     
     int dt0[] = {32,32,2,2};
     int dt1[] = {16,16,2,2};

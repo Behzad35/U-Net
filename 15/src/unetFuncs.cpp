@@ -6,7 +6,6 @@ double learning_rate;
 bool verbose;
 bool debug;
 
-
 void reluBackwards(ArrOfVols &image, ArrOfVols &error){
 	int num_of_features = image[0].d;
 	int imgsize = image[0].w; // includes padding (doesnt matter but just in case)
@@ -96,7 +95,6 @@ void fullconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output
 					for(int j = 0; j < depth_of_kernels; ++j){
 						tmp += input[b](j,x,y) * kernel[i](j,0,0); // i-th kernel applied to j-th input is added to i-th output	
 					}
-					// output[b](i,x-1,y-1) = tmp;
 					output[b](i,x,y) = tmp;
 				}
 			}
@@ -177,8 +175,6 @@ void upconv(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
 }
 
 void upconv_backward(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols &output){
-	
-
 	for(int i=0; i<output[0].d; ++i){
         for(int x=1; x<output[0].w-1; ++x){
             for(int y=1; y<output[0].w-1; ++y){
@@ -191,16 +187,15 @@ void upconv_backward(ArrOfVols const &input, ArrOfVols const &kernel, ArrOfVols 
         }
     }
 	
-	
     for(int i=0; i<output[0].d; ++i){
         for(int x=1; x<output[0].w-1; ++x){
             for(int y=1; y<output[0].w-1; ++y){
                 for(int b=0; b<batchsize; ++b){
                     for(int j=0; j<input[0].d; ++j){
                         output[b](i,x,y) += kernel[i](j,0,0) * input[b](j, 2*x-1, 2*y-1) +
-                                           kernel[i](j,1,0) * input[b](j, 2*x, 2*y-1) +
-                                           kernel[i](j,0,1) * input[b](j, 2*x-1, 2*y) +
-                                           kernel[i](j,1,1) * input[b](j, 2*x, 2*y);
+                                           	kernel[i](j,1,0) * input[b](j, 2*x, 2*y-1) +
+                                           	kernel[i](j,0,1) * input[b](j, 2*x-1, 2*y) +
+                                          	kernel[i](j,1,1) * input[b](j, 2*x, 2*y);
                     }
                 }
             }
@@ -257,19 +252,6 @@ double avg_batch_loss(const ArrOfVols &Aoloss){
 	return sum/(input_imgsize*input_imgsize*batchsize);
 }
 
-void minmax_batch_loss(const ArrOfVols &Aoloss, double &min, double &max){ // for debug
-	max = min = Aoloss[0](0,0,0);
-
-	for (int b=0; b<batchsize; ++b){
-        #pragma omp parallel for
-		for(int x = 0; x < input_imgsize; ++x){
-			for(int y = 0; y < input_imgsize; ++y){
-				if (Aoloss[b](0,x,y)>max){max = Aoloss[b](0,x,y);}
-				if (Aoloss[b](0,x,y)<min){min = Aoloss[b](0,x,y);}
-			}
-		}
-	}
-}
 
 ArrOfVols create_ArrOfVols(int num_of_arrs, int depth, int width){
 	ArrOfVols output(new Volume[num_of_arrs]);
@@ -525,7 +507,27 @@ void create_architecture(ConvStruct **layers, ConvStruct *conv_struct, int num_o
     }
 }
 
-void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap){ // segmap not padded (for debug)
+//=====================================================================================
+//=====================================================================================
+// The rest of functions below are only for debugging
+//=====================================================================================
+//=====================================================================================
+
+void minmax_batch_loss(const ArrOfVols &Aoloss, double &min, double &max){ // for debug
+	max = min = Aoloss[0](0,0,0);
+
+	for (int b=0; b<batchsize; ++b){
+        #pragma omp parallel for
+		for(int x = 0; x < input_imgsize; ++x){
+			for(int y = 0; y < input_imgsize; ++y){
+				if (Aoloss[b](0,x,y)>max){max = Aoloss[b](0,x,y);}
+				if (Aoloss[b](0,x,y)<min){min = Aoloss[b](0,x,y);}
+			}
+		}
+	}
+}
+
+void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap){ // segmentation map not padded (for debug)
 	for (int b=0; b<batchsize; ++b){
 		for (int x=1; x<Aof_final[0].w-1; ++x){
 			for (int y=1; y<Aof_final[0].w-1; ++y){
@@ -546,7 +548,7 @@ void compute_segmap(ArrOfVols const &Aof_final, ArrOfVols &Ao_segmap){ // segmap
 	}
 }
 
-void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, double value){ 	// for debug
+void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, double value){ 	// for debug (init kernels with random numbers)
 	const int range_from  = -1;
     const int range_to    = 1;
     std::random_device                  rand_dev;
@@ -568,11 +570,9 @@ void init_kernel_guess(ConvStruct *conv_struct, int num_of_convstructs, double v
 			}
 		}
 	}
-
-
 }
 
-void print_arr(const ArrOfVols &arr, int index, int depth, int *range_x, int *range_y, std::string filename){ // prints any ArrOfVols
+void print_arr(const ArrOfVols &arr, int index, int depth, int *range_x, int *range_y, std::string filename){ // for debug (prints any ArrOfVols)
 	std::ofstream outfile;
 	outfile.open(filename);
 	for (int y=range_y[0]; y<range_y[1] ; ++y){
@@ -612,7 +612,7 @@ double kernel_avg(const ArrOfVols &arr, int num_of_kernels){		// for debug
     return avg/(num_of_kernels*(arr[0].w)*(arr[0].w)*(arr[0].d));
 }
 
-void read_img_text(ArrOfVols &arr, int batchNr){	// read imges from .csv
+void read_img_text(ArrOfVols &arr, int batchNr){	// read imges from .csv (if CImg does not work)
 	for(int b=0; b<batchsize; ++b){
 		int img_num = batchsize*batchNr + b;
 		std::ifstream ch0("img_csv/img_"+std::to_string(img_num)+"_ch0.csv");
@@ -641,7 +641,7 @@ void read_img_text(ArrOfVols &arr, int batchNr){	// read imges from .csv
 	}
 }
 
-void read_annot_text(ArrOfVols &arr, int batchNr){
+void read_annot_text(ArrOfVols &arr, int batchNr){ // for debug (if CImg does not work)
 	for (int b=0; b<batchsize; ++b){
 		int img_num = batchsize*batchNr +b;
 		std::ifstream ch0("annot_csv/annot_"+std::to_string(img_num)+".csv");
@@ -660,7 +660,7 @@ void read_annot_text(ArrOfVols &arr, int batchNr){
 	}
 }
 
-void backup_kernels(ConvStruct *conv_struct, int num_of_convstructs){
+void backup_kernels(ConvStruct *conv_struct, int num_of_convstructs){ // for debug
 	for (int k=0; k<num_of_convstructs; ++k){
 		for (int i=0; i<conv_struct[k].out; ++i){
 			for (int j=0; j<conv_struct[k].in; ++j){
@@ -677,7 +677,7 @@ void backup_kernels(ConvStruct *conv_struct, int num_of_convstructs){
 	}
 }
 
-void read_backup_kernels(ConvStruct *conv_struct, int num_of_convstructs){
+void read_backup_kernels(ConvStruct *conv_struct, int num_of_convstructs){ // for debug
 	for (int k=0; k<num_of_convstructs; ++k){
 		for (int i=0; i<conv_struct[k].out; ++i){
 			for (int j=0; j<conv_struct[k].in; ++j){

@@ -5,7 +5,7 @@
 
 struct Volume{
 	Volume()= default;
-	Volume(int D, int W) : d(D), w(W), arr(new double[d*w*w]()){} 	// do double or double?
+	Volume(int D, int W) : d(D), w(W), arr(new double[d*w*w]()){} 
 
 	inline double& operator ()(int i, int j, int k) {
 		assert(i<d && j<w && k<w);

@@ -22,17 +22,6 @@ void ReadImages(ConvStruct::ArrOfVols &output, int batchNr, int batchSize, int i
                 output[b](c,input_imgsize-j,i+1)  = *imageIn.data(i,j,0,c)/256; // read image into interior of output 
             }
         }
-        // double test=0.0;
-        // for(int i = 0; i<input_imgsize; ++i){
-        //     for(int j = 0; j <input_imgsize; ++j){
-        //         for(int c=0; c<3; ++c) // R=0, G=1, B=2
-                 
-        //         test+=output[b](c,i+1,j+1); // read image into interior of output 
-        //     }
-        // }
-        // std::cout<< test<<std::endl;
-
-
         imageCounter++;
     }
 }
@@ -71,7 +60,7 @@ void displayImage(ConvStruct::ArrOfVols &output, int b, int c, int input_imgsize
     disp.close();
 }
 
-void convert_all_imgs_to_csv(){ // converts all images to .csv files
+void convert_all_imgs_to_csv(){ // converts all images to .csv files (use it only if CImg does not work)
     ConvStruct::ArrOfVols img(create_ArrOfVols(1, 3, input_imgsize+2));
     ConvStruct::ArrOfVols annot(create_ArrOfVols(1, 1, input_imgsize));
 
