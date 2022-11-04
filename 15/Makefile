@@ -1,4 +1,4 @@
-BINARY=bin
+BINARY=unet
 CODEDIRS =. src
 INCDIRS=. include
 

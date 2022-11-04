@@ -615,9 +615,9 @@ double kernel_avg(const ArrOfVols &arr, int num_of_kernels){		// for debug
 void read_img_text(ArrOfVols &arr, int batchNr){	// read imges from .csv (if CImg does not work)
 	for(int b=0; b<batchsize; ++b){
 		int img_num = batchsize*batchNr + b;
-		std::ifstream ch0("img_csv/img_"+std::to_string(img_num)+"_ch0.csv");
-		std::ifstream ch1("img_csv/img_"+std::to_string(img_num)+"_ch1.csv");
-		std::ifstream ch2("img_csv/img_"+std::to_string(img_num)+"_ch2.csv");
+		std::ifstream ch0("training_data/img_csv/img_"+std::to_string(img_num)+"_ch0.csv");
+		std::ifstream ch1("training_data/img_csv/img_"+std::to_string(img_num)+"_ch1.csv");
+		std::ifstream ch2("training_data/img_csv/img_"+std::to_string(img_num)+"_ch2.csv");
 		if(!ch0.is_open() || !ch1.is_open() || !ch2.is_open() ){
 			std::cout<<"invalid img"<<std::endl;
 			exit(1);
@@ -644,7 +644,7 @@ void read_img_text(ArrOfVols &arr, int batchNr){	// read imges from .csv (if CIm
 void read_annot_text(ArrOfVols &arr, int batchNr){ // for debug (if CImg does not work)
 	for (int b=0; b<batchsize; ++b){
 		int img_num = batchsize*batchNr +b;
-		std::ifstream ch0("annot_csv/annot_"+std::to_string(img_num)+".csv");
+		std::ifstream ch0("training_data/annot_csv/annot_"+std::to_string(img_num)+".csv");
 		if(!ch0.is_open()){
 			std::cout<<"invalid annot"<<std::endl;
 			exit(1);

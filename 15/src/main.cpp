@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
     input_imgsize = std::stoi(argv[1]);      // should be 512
     batchsize  = std::stoi(argv[2]);         // should be 8
     int num_of_batches = std::stoi(argv[3]); // should be 128/batchsize
-    int epochs = 10000;      
+    int epochs = 100;      
     int num_of_layers = 5;  // At least must be 2
     int channel_size = 2;
     bool write_segmap = false;
