@@ -22,7 +22,7 @@ Other parameters such as number of layers, channel size, number of epochs, learn
 
 (Weights): kernel weights extracted from the python code
 
-(training_data): images and annotations in .png and .csv formats (.csv files were used to run the program on the cluster
+(training_data): images and annotations in .png and .csv formats (.csv files were used to run the program on the cluster)
 
 (backup_kernel_csv): folder to store kernel weights (for debugging, or if computations need to be stopped and carried on later.)
 
