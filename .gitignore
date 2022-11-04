@@ -1,9 +1,0 @@
-*.o
-*.d
-*.swp
-
-/15/backup_kernel_csv
-/15/bin
-/15/resultImages1
-/15/resultImages2
-
